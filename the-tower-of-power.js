@@ -82,7 +82,13 @@ var THE_TOWER_OF_POWER = (function () {
     }
   };
 
-  //
+  var game = (function() {
+    //
+
+    return {
+      loop: function(delta)
+    }
+  })();
 });
 
 // misc functions
