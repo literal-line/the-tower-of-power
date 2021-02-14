@@ -146,6 +146,7 @@ var THE_TOWER_OF_POWER = (function () {
     return {
       loop: function () {
         setTimeout(function () {
+          requestAnimationFrame(game.loop);
           stage.clearRect(0, 0, canvas.width, canvas.height);
           switch (STATE) {
             case 'init':
@@ -161,7 +162,6 @@ var THE_TOWER_OF_POWER = (function () {
           timer++;
         }, 1000 / fps);
         assets.audio.silence.play();
-        requestAnimationFrame(game.loop);
       }
     }
   })();
