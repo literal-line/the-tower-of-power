@@ -11,7 +11,7 @@ var THE_TOWER_OF_POWER = (function () {
     authors: 'Literal Line',
     width: 224,
     height: 288,
-    bg: '#FFFFFF',
+    bg: '#000000',
     aa: false
   };
 
@@ -72,16 +72,17 @@ var THE_TOWER_OF_POWER = (function () {
     'S','T','U','V','W','X','Y','Z',' ','!','\'','*','-','.',':','='
   ];
   CanvasRenderingContext2D.prototype.drawText = function (obj) {
-    var t = obj.text.toUppercase();
+    var t = obj.text.toUpperCase();
     var c = obj.color;
     var x = obj.x;
     var y = obj.y;
     for (var i = 0; i < t.length; i++) {
       var char = this.textChars.indexOf(t.charAt(i));
-      this.drawImage(assets.textures.font, char % 28, Math.floor(/* bruh */));
+      this.drawImage(assets.textures.font, char % 28 * 8, Math.floor(char / 28) * 8 + c * 24, 8, 8, (x + i) * 8, y * 8, 8, 8);
     }
   };
-  init();
+
+  //
 });
 
 // misc functions
@@ -96,20 +97,20 @@ function newImage(src) {
   return img;
 }
 
-function convertBase(value, from_base, to_base) { // i know you can convert base 36 to 10 and whatever without this but i like it so im gonna use it
+function convertBase(value, fromBase, toBase) {
   var range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/'.split('');
-  var from_range = range.slice(0, from_base);
-  var to_range = range.slice(0, to_base);
+  var fromRange = range.slice(0, fromBase);
+  var toRange = range.slice(0, toBase);
 
-  var dec_value = value.split('').reverse().reduce(function (carry, digit, index) {
-    if (from_range.indexOf(digit) === -1) throw new Error('Invalid digit `' + digit + '` for base ' + from_base + '.');
-    return carry += from_range.indexOf(digit) * (Math.pow(from_base, index));
+  var decValue = value.split('').reverse().reduce(function (carry, digit, index) {
+    if (fromRange.indexOf(digit) === -1) throw new Error('Invalid digit `' + digit + '` for base ' + fromBase + '.');
+    return carry += fromRange.indexOf(digit) * (Math.pow(fromBase, index));
   }, 0);
 
-  var new_value = '';
-  while (dec_value > 0) {
-    new_value = to_range[dec_value % to_base] + new_value;
-    dec_value = (dec_value - (dec_value % to_base)) / to_base;
+  var newValue = '';
+  while (decValue > 0) {
+    newValue = toRange[decValue % toBase] + newValue;
+    decValue = (decValue - (decValue % toBase)) / toBase;
   }
-  return new_value || '0';
+  return newValue || '0';
 }
