@@ -67,14 +67,18 @@ var THE_TOWER_OF_POWER = (function () {
     }
   };
 
-  CanvasRenderingContext2D.prototype.drawTextChars = '0'
+  CanvasRenderingContext2D.prototype.textChars = [
+    '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
+    'S','T','U','V','W','X','Y','Z',' ','!','\'','*','-','.',':','='
+  ];
   CanvasRenderingContext2D.prototype.drawText = function (obj) {
-    var t = obj.text;
+    var t = obj.text.toUppercase();
     var c = obj.color;
     var x = obj.x;
     var y = obj.y;
     for (var i = 0; i < t.length; i++) {
-      //
+      var char = this.textChars.indexOf(t.charAt(i));
+      this.drawImage(assets.textures.font, char % 28, Math.floor(/* bruh */));
     }
   };
   init();
