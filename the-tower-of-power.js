@@ -56,20 +56,24 @@ var THE_TOWER_OF_POWER = (function () {
     document.body.appendChild(canvas);
     console.log('the-tower-of-power');
     console.log('by ' + info.authors);
+    setTimeout(function () {
+      requestAnimationFrame(game.loop);
+    }, 1000);
   };
 
   var assets = {
     textures: {
-      font: newImage('./assets/font.gif')
+      font: newImage('./assets/font.png')
     },
     audio: {
-      //
+      silence: new GameAudio('assets/5-seconds-of-silence.mp3'),
+      insertCredit: new GameAudio('./assets/insert_credit.mp3')
     }
   };
 
   CanvasRenderingContext2D.prototype.textChars = [
-    '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
-    'S','T','U','V','W','X','Y','Z',' ','!','\'','*','-','.',':','='
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+    'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '!', '\'', '*', '-', '.', ':', '='
   ];
   CanvasRenderingContext2D.prototype.drawText = function (obj) {
     var t = obj.text.toUpperCase();
@@ -82,14 +86,89 @@ var THE_TOWER_OF_POWER = (function () {
     }
   };
 
-  var game = (function() {
-    //
+  var game = (function () {
+    var STATE = 'init';
+    var fps = 60;
+    var timer = 0;
+
+    var highScores = [
+      { score: 123456, floor: 99, name: 'bruh' }
+    ];
+
+    var init = (function () {
+      var iCanvas = document.createElement('canvas');
+      var iStage = iCanvas.getContext('2d');
+      var number = 0;
+      iCanvas.width = info.width;
+      iCanvas.height = info.height;
+
+      return function () {
+        if (!((timer + 2) % 2) && number < 8) {
+          for (var y = 0; y < iCanvas.height / 8; y++) iStage.drawText({ text: repeatChar(number, Math.floor(canvas.width / 8)), color: number, x: 0, y: y });
+          number++;
+        }
+        if (timer >= 60) STATE = 'title';
+        stage.drawImage(iCanvas, 0, 0);
+      }
+    })();
+
+    var pointsOverlay = function () {
+      stage.drawText({ text: '1up', color: 0, x: 3, y: 0 });
+      stage.drawText({ text: 'high score', color: 3, x: 9, y: 0 });
+    };
+
+    var title = (function () {
+      var tCanvas = document.createElement('canvas');
+      var tStage = tCanvas.getContext('2d');
+      var xOffset = -info.width;
+      var credits = 0;
+      var enter = false;
+      tCanvas.width = info.width * 2;
+      tCanvas.height = info.height;
+
+      tStage.drawText({ text: 'the tower of', color: 2, x: 7, y: 5 });
+      tStage.drawText({ text: 'power', color: 2, x: 11, y: 7 });
+
+      return function () {
+        stage.drawImage(tCanvas, xOffset, 0);
+        stage.drawText({ text: 'credit' + repeatChar(' ', 3 - credits.toString().length) + credits, color: 7, x: 19, y: 35 });
+        if (xOffset < 0) xOffset++;
+        if (keys['Enter'] && !enter) {
+          credits++
+          assets.audio.insertCredit.play(true);
+          enter = true;
+        }
+        if (!keys['Enter']) enter = false;
+        if (credits > 99) credits = 99;
+      }
+    })();
 
     return {
-      loop: function(delta)
+      loop: function () {
+        setTimeout(function () {
+          stage.clearRect(0, 0, canvas.width, canvas.height);
+          switch (STATE) {
+            case 'init':
+              init();
+              break;
+            case 'title':
+              title();
+              pointsOverlay();
+              break;
+            default:
+              console.log('bruh');
+          }
+          timer++;
+        }, 1000 / fps);
+        assets.audio.silence.play();
+        requestAnimationFrame(game.loop);
+      }
     }
   })();
-});
+
+  init();
+}); // iife is called on document load (so is it really an iife or just a func expression?? 🤔)
+
 
 // misc functions
 
@@ -97,10 +176,28 @@ function rndInt(max) {
   return Math.floor(Math.random() * max);
 }
 
+function repeatChar(char, amt) {
+  return new Array(amt + 1).join(char);
+}
+
 function newImage(src) {
   var img = document.createElement('img');
   img.src = src;
   return img;
+}
+
+function GameAudio(src) {
+  this.audio = document.createElement('audio');
+  this.audio.src = src;
+  this.audio.volume = 0.5;
+}
+
+GameAudio.prototype.play = function (startOver) {
+  if (startOver) {
+    this.audio.pause();
+    this.audio.currentTime = 0.1;
+  }
+  this.audio.play();
 }
 
 function convertBase(value, fromBase, toBase) {
