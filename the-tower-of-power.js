@@ -12,8 +12,11 @@ var THE_TOWER_OF_POWER = (function () {
     width: 224,
     height: 288,
     bg: '#000000',
-    aa: false
+    aa: false,
+    fps: 60
   };
+
+  var loop;
 
   var keys = {};
   var initEventListeners = function () {
@@ -36,9 +39,11 @@ var THE_TOWER_OF_POWER = (function () {
       delete keys[e.code];
     });
     addEventListener('blur', function () {
+      clearInterval(loop);
       for (var a in playing) playing[a].pause();
     });
     addEventListener('focus', function () {
+      loop = setInterval(game.loop, 1000 / info.fps);
       for (var a in playing) playing[a].play();
     });
 
@@ -63,7 +68,7 @@ var THE_TOWER_OF_POWER = (function () {
     console.log('the-tower-of-power');
     console.log('by ' + info.authors);
     setTimeout(function () {
-      requestAnimationFrame(game.loop);
+      loop = setInterval(game.loop, 1000 / info.fps); // man...
     }, 1000);
   };
 
@@ -192,17 +197,8 @@ var THE_TOWER_OF_POWER = (function () {
       }
     })();
 
-    var lastDelta = 0;
-    var ms = 0;
-    var fps = 60;
-    var tolerance = 0.1;
-
     return {
       loop: function (delta) {
-        requestAnimationFrame(game.loop);
-        ms = delta - lastDelta;
-        if (1000 / fps > ms + tolerance) return;
-
         stage.clearRect(0, 0, canvas.width, canvas.height);
         switch (STATE) {
           case 'init':
@@ -218,9 +214,7 @@ var THE_TOWER_OF_POWER = (function () {
           default:
             throw ('Error: requested state does not exist!');
         }
-
         timer++;
-        lastDelta = delta;
         assets.audio.silence.play();
       }
     }
