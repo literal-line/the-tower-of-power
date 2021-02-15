@@ -106,7 +106,7 @@ var THE_TOWER_OF_POWER = (function () {
   var assets = {
     textures: {
       font: newImage('./assets/font.png'),
-      logo: newImage('./assets/pxArt.png')
+      logo: newImage('./assets/quiquePixel.png')
     },
     audio: {
       silence: new GameAudio('assets/5-seconds-of-silence.mp3'),
