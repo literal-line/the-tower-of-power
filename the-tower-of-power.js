@@ -26,6 +26,9 @@ var THE_TOWER_OF_POWER = (function () {
       }
     };
     addEventListener('resize', resize);
+    addEventListener('blur', function () {
+      
+    });
     addEventListener('keydown', function (e) {
       keys[e.code] = true;
     });
@@ -33,7 +36,10 @@ var THE_TOWER_OF_POWER = (function () {
       delete keys[e.code];
     });
     addEventListener('blur', function () {
-      keys = {};
+      for (var a in playing) playing[a].pause();
+    });
+    addEventListener('focus', function () {
+      for (var a in playing) playing[a].play();
     });
 
     resize();
@@ -61,14 +67,25 @@ var THE_TOWER_OF_POWER = (function () {
     }, 1000);
   };
 
-  var assets = {
-    textures: {
-      font: newImage('./assets/font.png')
-    },
-    audio: {
-      silence: new GameAudio('assets/5-seconds-of-silence.mp3'),
-      insertCredit: new GameAudio('./assets/insert_credit.mp3')
+  var playing = {};
+
+  var GameAudio = function (src) {
+    this.audio = document.createElement('audio');
+    this.audio.src = src;
+    this.audio.volume = 0.5;
+    var self = this;
+    this.audio.addEventListener('ended', function () {
+      delete playing[self.audio.src];
+    });
+  };
+
+  GameAudio.prototype.play = function (time) {
+    playing[this.audio.src] = this.audio;
+    if (time) {
+      this.audio.pause();
+      this.audio.currentTime = time;
     }
+    this.audio.play();
   };
 
   CanvasRenderingContext2D.prototype.textChars = [
@@ -86,9 +103,20 @@ var THE_TOWER_OF_POWER = (function () {
     }
   };
 
+  var assets = {
+    textures: {
+      font: newImage('./assets/font.png'),
+      logo: newImage('./assets/pxArt.png')
+    },
+    audio: {
+      silence: new GameAudio('assets/5-seconds-of-silence.mp3'),
+      jingle: new GameAudio('./assets/jingle.mp3'),
+      insertCredit: new GameAudio('./assets/insert_credit.mp3')
+    }
+  };
+
   var game = (function () {
     var STATE = 'init';
-    var fps = 60;
     var timer = 0;
 
     var highScores = [
@@ -107,8 +135,29 @@ var THE_TOWER_OF_POWER = (function () {
           for (var y = 0; y < iCanvas.height / 8; y++) iStage.drawText({ text: repeatChar(number, Math.floor(canvas.width / 8)), color: number, x: 0, y: y });
           number++;
         }
-        if (timer >= 60) STATE = 'title';
+        if (timer >= 60) STATE = 'intro';
         stage.drawImage(iCanvas, 0, 0);
+      }
+    })();
+
+    var intro = (function () {
+      var frame = 0;
+      var opacity = 1;
+      var logo = assets.textures.logo;
+
+      return function () {
+        stage.drawImage(logo, canvas.width / 2 - logo.width / 2, canvas.height / 2 - logo.height / 2);
+        stage.fillStyle = 'rgba(0, 0, 0, ' + opacity + ')';
+        stage.fillRect(0, 0, canvas.width, canvas.height);
+        if (frame === 0) assets.audio.jingle.play();
+        if (frame > 0 && frame <= 30) opacity -= 1 / 30;
+        if (frame > 120 && frame <= 150) opacity += 1 / 30;
+        frame++;
+        if (frame > 240) {
+          frame = 0;
+          opacity = 1;
+          STATE = 'title';
+        }
       }
     })();
 
@@ -135,7 +184,7 @@ var THE_TOWER_OF_POWER = (function () {
         if (xOffset < 0) xOffset++;
         if (keys['Enter'] && !enter) {
           credits++
-          assets.audio.insertCredit.play(true);
+          assets.audio.insertCredit.play(0.1);
           enter = true;
         }
         if (!keys['Enter']) enter = false;
@@ -143,24 +192,35 @@ var THE_TOWER_OF_POWER = (function () {
       }
     })();
 
+    var lastDelta = 0;
+    var ms = 0;
+    var fps = 60;
+    var tolerance = 0.1;
+
     return {
-      loop: function () {
-        setTimeout(function () {
-          requestAnimationFrame(game.loop);
-          stage.clearRect(0, 0, canvas.width, canvas.height);
-          switch (STATE) {
-            case 'init':
-              init();
-              break;
-            case 'title':
-              title();
-              pointsOverlay();
-              break;
-            default:
-              console.log('bruh');
-          }
-          timer++;
-        }, 1000 / fps);
+      loop: function (delta) {
+        requestAnimationFrame(game.loop);
+        ms = delta - lastDelta;
+        if (1000 / fps > ms + tolerance) return;
+
+        stage.clearRect(0, 0, canvas.width, canvas.height);
+        switch (STATE) {
+          case 'init':
+            init();
+            break;
+          case 'intro':
+            intro();
+            break;
+          case 'title':
+            title();
+            pointsOverlay();
+            break;
+          default:
+            throw ('Error: requested state does not exist!');
+        }
+
+        timer++;
+        lastDelta = delta;
         assets.audio.silence.play();
       }
     }
@@ -169,6 +229,16 @@ var THE_TOWER_OF_POWER = (function () {
   init();
 }); // iife is called on document load (so is it really an iife or just a func expression?? 🤔)
 
+var ctb = function () {
+  var btn = document.createElement('button');
+  btn.style = 'padding: 10px; border: 1px solid #FFFFFF; border-radius: 5px; background: #111111; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); outline: none; font-family: "Courier New"; font-size: 3vw; color: #FFFFFF';
+  btn.innerHTML = 'Click to begin';
+  btn.onclick = function () {
+    THE_TOWER_OF_POWER();
+    btn.remove();
+  };
+  document.body.appendChild(btn);
+};
 
 // misc functions
 
@@ -184,20 +254,6 @@ function newImage(src) {
   var img = document.createElement('img');
   img.src = src;
   return img;
-}
-
-function GameAudio(src) {
-  this.audio = document.createElement('audio');
-  this.audio.src = src;
-  this.audio.volume = 0.5;
-}
-
-GameAudio.prototype.play = function (startOver) {
-  if (startOver) {
-    this.audio.pause();
-    this.audio.currentTime = 0.1;
-  }
-  this.audio.play();
 }
 
 function convertBase(value, fromBase, toBase) {
