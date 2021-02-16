@@ -30,7 +30,7 @@ var THE_TOWER_OF_POWER = (function () {
     };
     addEventListener('resize', resize);
     addEventListener('blur', function () {
-      
+
     });
     addEventListener('keydown', function (e) {
       keys[e.code] = true;
@@ -50,7 +50,7 @@ var THE_TOWER_OF_POWER = (function () {
     resize();
   };
 
-  var initCanvas = function () {
+  var inilCanvas = function () {
     canvas.width = info.width;
     canvas.height = info.height;
     canvas.style.background = info.bg;
@@ -62,14 +62,12 @@ var THE_TOWER_OF_POWER = (function () {
   };
 
   var init = function () {
-    initCanvas();
+    inilCanvas();
     initEventListeners();
     document.body.appendChild(canvas);
     console.log('the-tower-of-power');
     console.log('by ' + info.authors);
-    setTimeout(function () {
-      loop = setInterval(game.loop, 1000 / info.fps); // man...
-    }, 1000);
+    loop = setInterval(game.loop, 1000 / info.fps); // feels bad man...
   };
 
   var playing = {};
@@ -110,13 +108,14 @@ var THE_TOWER_OF_POWER = (function () {
 
   var assets = {
     textures: {
-      font: newImage('./assets/font.png'),
-      logo: newImage('./assets/quiquePixel.png')
+      font: createTexture('./assets/font.png'),
+      logo: createTexture('./assets/quiquePixel.png'),
+      title: createTexture('./assets/title.png')
     },
     audio: {
       silence: new GameAudio('assets/5-seconds-of-silence.mp3'),
       jingle: new GameAudio('./assets/jingle.mp3'),
-      insertCredit: new GameAudio('./assets/insert_credit.mp3')
+      insertCredit: new GameAudio('./assets/insertCredit.mp3')
     }
   };
 
@@ -129,34 +128,39 @@ var THE_TOWER_OF_POWER = (function () {
     ];
 
     var init = (function () {
-      var iCanvas = document.createElement('canvas');
-      var iStage = iCanvas.getContext('2d');
+      var lCanvas = document.createElement('canvas');
+      var lStage = lCanvas.getContext('2d');
+      lCanvas.width = info.width;
+      lCanvas.height = info.height;
       var number = 0;
-      iCanvas.width = info.width;
-      iCanvas.height = info.height;
 
       return function () {
         if (!((timer + 2) % 2) && number < 8) {
-          for (var y = 0; y < iCanvas.height / 8; y++) iStage.drawText({ text: repeatChar(number, Math.floor(canvas.width / 8)), color: number, x: 0, y: y });
+          for (var y = 0; y < lCanvas.height / 8; y++) lStage.drawText({ text: repeatChar(number, Math.floor(canvas.width / 8)), color: number, x: 0, y: y });
           number++;
         }
         if (timer >= 60) STATE = 'intro';
-        stage.drawImage(iCanvas, 0, 0);
+        stage.drawImage(lCanvas, 0, 0);
       }
     })();
 
     var intro = (function () {
-      var frame = 0;
-      var opacity = 1;
+      var lCanvas = document.createElement('canvas');
+      var lStage = lCanvas.getContext('2d');
+      lCanvas.width = info.width;
+      lCanvas.height = info.height;
       var logo = assets.textures.logo;
+      var frame = 0;
+      var opacity = 0;
 
       return function () {
-        stage.drawImage(logo, canvas.width / 2 - logo.width / 2, canvas.height / 2 - logo.height / 2);
-        stage.fillStyle = 'rgba(0, 0, 0, ' + opacity + ')';
-        stage.fillRect(0, 0, canvas.width, canvas.height);
+        lStage.globalAlpha = opacity;
+        lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
+        lStage.drawImage(logo, lCanvas.width / 2 - logo.width / 2, lCanvas.height / 2 - logo.height / 2);
+        stage.drawImage(lCanvas, 0, 0);
         if (frame === 0) assets.audio.jingle.play();
-        if (frame > 0 && frame <= 30) opacity -= 1 / 30;
-        if (frame > 120 && frame <= 150) opacity += 1 / 30;
+        if (frame > 0 && frame <= 30) opacity += 1 / 30;
+        if (frame > 120 && frame <= 150) opacity -= 1 / 30;
         frame++;
         if (frame > 240) {
           frame = 0;
@@ -172,21 +176,26 @@ var THE_TOWER_OF_POWER = (function () {
     };
 
     var title = (function () {
-      var tCanvas = document.createElement('canvas');
-      var tStage = tCanvas.getContext('2d');
+      var lCanvas = document.createElement('canvas');
+      var lStage = lCanvas.getContext('2d');
+      lCanvas.width = info.width * 2;
+      lCanvas.height = info.height;
+      var title = assets.textures.title;
+      var lTimer = 0;
       var xOffset = -info.width;
       var credits = 0;
       var enter = false;
-      tCanvas.width = info.width * 2;
-      tCanvas.height = info.height;
 
-      tStage.drawText({ text: 'the tower of', color: 2, x: 7, y: 5 });
-      tStage.drawText({ text: 'power', color: 2, x: 11, y: 7 });
+      lStage.drawImage(title, lCanvas.width * 0.75 - title.width / 2, 32);
+      lStage.drawText({ text: 'created by literal line', color: 7, x: 30, y: 25 });
+      lStage.drawText({ text: 'the tower of', color: 2, x: 7, y: 5 });
+      lStage.drawText({ text: 'power', color: 2, x: 11, y: 7 });
 
       return function () {
-        stage.drawImage(tCanvas, xOffset, 0);
+        stage.drawImage(lCanvas, xOffset, 0);
         stage.drawText({ text: 'credit' + repeatChar(' ', 3 - credits.toString().length) + credits, color: 7, x: 19, y: 35 });
-        if (xOffset < 0) xOffset++;
+        if (lTimer > 300 && lTimer <= 524) xOffset = -info.width + lTimer - 300;
+        if (lTimer > 824 && lTimer <= 1048) xOffset = -lTimer + 824;
         if (keys['Enter'] && !enter) {
           credits++
           assets.audio.insertCredit.play(0.1);
@@ -194,6 +203,8 @@ var THE_TOWER_OF_POWER = (function () {
         }
         if (!keys['Enter']) enter = false;
         if (credits > 99) credits = 99;
+        lTimer++;
+        if (lTimer > 1048) lTimer = 0;
       }
     })();
 
@@ -244,7 +255,7 @@ function repeatChar(char, amt) {
   return new Array(amt + 1).join(char);
 }
 
-function newImage(src) {
+function createTexture(src) {
   var img = document.createElement('img');
   img.src = src;
   return img;
