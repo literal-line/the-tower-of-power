@@ -16,8 +16,6 @@ var THE_TOWER_OF_POWER = (function () {
     fps: 60
   };
 
-  var loop;
-
   var keys = {};
   var initEventListeners = function () {
     var resize = function () {
@@ -39,18 +37,16 @@ var THE_TOWER_OF_POWER = (function () {
       delete keys[e.code];
     });
     addEventListener('blur', function () {
-      clearInterval(loop);
       for (var a in playing) playing[a].pause();
     });
     addEventListener('focus', function () {
-      loop = setInterval(game.loop, 1000 / info.fps);
       for (var a in playing) playing[a].play();
     });
 
     resize();
   };
 
-  var inilCanvas = function () {
+  var initCanvas = function () {
     canvas.width = info.width;
     canvas.height = info.height;
     canvas.style.background = info.bg;
@@ -62,12 +58,14 @@ var THE_TOWER_OF_POWER = (function () {
   };
 
   var init = function () {
-    inilCanvas();
+    initCanvas();
     initEventListeners();
     document.body.appendChild(canvas);
     console.log('the-tower-of-power');
     console.log('by ' + info.authors);
-    loop = setInterval(game.loop, 1000 / info.fps); // feels bad man...
+    setTimeout(function () {
+      requestAnimationFrame(game.loop);
+    }, 100);
   };
 
   var playing = {};
@@ -96,7 +94,7 @@ var THE_TOWER_OF_POWER = (function () {
     'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '!', '\'', '*', '-', '.', ':', '='
   ];
   CanvasRenderingContext2D.prototype.drawText = function (obj) {
-    var t = obj.text.toUpperCase();
+    var t = obj.text.toString().toUpperCase();
     var c = obj.color;
     var x = obj.x;
     var y = obj.y;
@@ -123,8 +121,12 @@ var THE_TOWER_OF_POWER = (function () {
     var STATE = 'init';
     var timer = 0;
 
-    var highScores = [
-      { score: 123456, floor: 99, name: 'bruh' }
+    var highscores = [
+      { score: 86434, floor: 99, name: 'chad' },
+      { score: 81956, floor: 96, name: 'm.2' },
+      { score: 47521, floor: 69, name: 'nice' },
+      { score: 31184, floor: 42, name: 'weed' },
+      { score: 0, floor: 0, name: 'lol' }
     ];
 
     var init = (function () {
@@ -153,11 +155,13 @@ var THE_TOWER_OF_POWER = (function () {
       var frame = 0;
       var opacity = 0;
 
-      return function () {
+      var drawLogo = function () {
         lStage.globalAlpha = opacity;
         lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
         lStage.drawImage(logo, lCanvas.width / 2 - logo.width / 2, lCanvas.height / 2 - logo.height / 2);
-        stage.drawImage(lCanvas, 0, 0);
+      };
+
+      var doTiming = function () {
         if (frame === 0) assets.audio.jingle.play();
         if (frame > 0 && frame <= 30) opacity += 1 / 30;
         if (frame > 120 && frame <= 150) opacity -= 1 / 30;
@@ -167,6 +171,12 @@ var THE_TOWER_OF_POWER = (function () {
           opacity = 1;
           STATE = 'title';
         }
+      };
+
+      return function () {
+        drawLogo();
+        doTiming();
+        stage.drawImage(lCanvas, 0, 0);
       }
     })();
 
@@ -184,49 +194,92 @@ var THE_TOWER_OF_POWER = (function () {
       var lTimer = 0;
       var xOffset = -info.width;
       var credits = 0;
+      var lastHighscores;
       var enter = false;
 
-      lStage.drawImage(title, lCanvas.width * 0.75 - title.width / 2, 32);
-      lStage.drawText({ text: 'created by literal line', color: 7, x: 30, y: 25 });
-      lStage.drawText({ text: 'the tower of', color: 2, x: 7, y: 5 });
-      lStage.drawText({ text: 'power', color: 2, x: 11, y: 7 });
+      var drawStatic = function () {
+        lStage.drawImage(title, lCanvas.width * 0.75 - title.width / 2, 32);
+        lStage.drawText({ text: 'created by literal line', color: 7, x: 30, y: 25 });
+        lStage.drawText({ text: 'licensed under  the', color: 7, x: 32, y: 28 });
+        lStage.drawText({ text: 'gnu  gpl v3', color: 7, x: 36, y: 29 });
+        lStage.drawText({ text: 'more at quique.gq', color: 0, x: 33, y: 32 });
+        lStage.drawText({ text: 'the tower of', color: 2, x: 7, y: 5 });
+        lStage.drawText({ text: 'power', color: 2, x: 11, y: 7 });
+        lStage.drawText({ text: 'best 5', color: 0, x: 10, y: 12 });
+        lStage.drawText({ text: 'rank  score floor  name', color: 7, x: 2, y: 16 });
+      };
 
-      return function () {
-        stage.drawImage(lCanvas, xOffset, 0);
-        stage.drawText({ text: 'credit' + repeatChar(' ', 3 - credits.toString().length) + credits, color: 7, x: 19, y: 35 });
-        if (lTimer > 300 && lTimer <= 524) xOffset = -info.width + lTimer - 300;
-        if (lTimer > 824 && lTimer <= 1048) xOffset = -lTimer + 824;
-        if (keys['Enter'] && !enter) {
+      var updateHighscores = function () {
+        var i = 0;
+        highscores.forEach(function (cur) {
+          i++;
+          var y = 17 + i * 2;
+          lStage.drawText({ text: i + '    ' + cur.score, color: 7, x: 3, y: y });
+          lStage.drawText({ text: cur.floor, color: 7, x: 17, y: y });
+          lStage.drawText({ text: cur.name, color: 7, x: 21, y: y });
+        });
+      };
+
+      var doCredits = function () {
+        if (keys['ShiftRight'] && !enter) {
           credits++
           assets.audio.insertCredit.play(0.1);
           enter = true;
         }
-        if (!keys['Enter']) enter = false;
+        if (!keys['ShiftRight']) enter = false;
         if (credits > 99) credits = 99;
+        stage.drawText({ text: 'credit' + repeatChar(' ', 3 - credits.toString().length) + credits, color: 7, x: 19, y: 35 });
+      };
+
+      var doScrolling = function () {
+        if (lTimer > 300 && lTimer <= 524) xOffset = -info.width + lTimer - 300;
+        if (lTimer > 824 && lTimer <= 1048) xOffset = -lTimer + 824;
         lTimer++;
         if (lTimer > 1048) lTimer = 0;
+      };
+
+      return function () {
+        if (lastHighscores !== highscores) {
+          lStage.clearRect(0, 0, lStage.width, lStage.height);
+          drawStatic();
+          updateHighscores();
+        }
+        doCredits();
+        doScrolling();
+        stage.drawImage(lCanvas, xOffset, 0);
       }
     })();
 
+    var delta = 0;
+    var then = 0;
+    var interval = 1000 / info.fps;
+
     return {
-      loop: function (delta) {
-        stage.clearRect(0, 0, canvas.width, canvas.height);
-        switch (STATE) {
-          case 'init':
-            init();
-            break;
-          case 'intro':
-            intro();
-            break;
-          case 'title':
-            title();
-            pointsOverlay();
-            break;
-          default:
-            throw ('Error: requested state does not exist!');
+      loop: function (now) {
+        if (!then) then = now;
+        requestAnimationFrame(game.loop);
+        delta = now - then;
+
+        if (delta > interval) {
+          stage.clearRect(0, 0, canvas.width, canvas.height);
+          switch (STATE) {
+            case 'init':
+              init();
+              break;
+            case 'intro':
+              intro();
+              break;
+            case 'title':
+              title();
+              pointsOverlay();
+              break;
+            default:
+              throw ('Error: requested state does not exist!');
+          }
+          timer++;
+          assets.audio.silence.play();
+          then = now - (delta % interval);
         }
-        timer++;
-        assets.audio.silence.play();
       }
     }
   })();
@@ -236,7 +289,7 @@ var THE_TOWER_OF_POWER = (function () {
 
 var ctb = function () {
   var btn = document.createElement('button');
-  btn.style = 'padding: 10px; border: 1px solid #FFFFFF; border-radius: 5px; background: #111111; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); outline: none; font-family: "Courier New"; font-size: 3vw; color: #FFFFFF';
+  btn.style = 'padding: 10px; border: 1px solid #FFFFFF; border-radius: 3px; background: #111111; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); outline: none; font-family: "Courier New"; font-size: 3vw; color: #FFFFFF';
   btn.innerHTML = 'Click to begin';
   btn.onclick = function () {
     THE_TOWER_OF_POWER();
