@@ -57,10 +57,33 @@ var THE_TOWER_OF_POWER = (function () {
     stage.imageSmoothingEnabled = info.aa;
   };
 
+  var initHelp = function () {
+    var helpBtn = document.createElement('button');
+    var helpPopup = document.createElement('div');
+    helpPopup.innerHTML =
+      '<h1>Help</h1>' +
+      '<hr style="border: 1px solid #FFFFFF"></hr>'+
+      '<h2>Controls</h2>' +
+      '<ul>' +
+      '<li>Directional: Arrow Keys or WASD</li>' +
+      '<li>Attack: Space</li>' +
+      '<li>Insert coin: Shift</li>' +
+      '<li>Player 1 start: Enter</li>' +
+      '<ul>';
+    helpBtn.style = 'background: #000000 url(\'./assets/buttonHelp.png\'); background-size: cover; border: 2px outset #AAAAAA; position: fixed; width: 52px; height: 52px; bottom: 5px; right: 5px; outline: none; image-rendering: pixelated';
+    helpPopup.style = 'background: #000000; border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF';
+    helpBtn.classList.add('btn');
+    helpPopup.classList.add('hidden');
+    helpBtn.onclick = function () { helpPopup.classList.toggle('hidden'); this.blur(); };
+    document.body.insertAdjacentElement('afterbegin', helpBtn);
+    document.body.insertAdjacentElement('afterbegin', helpPopup);
+  };
+
   var init = function () {
-    initCanvas();
     initEventListeners();
-    document.body.appendChild(canvas);
+    initHelp();
+    initCanvas();
+    document.body.insertAdjacentElement('afterbegin', canvas);
     console.log('the-tower-of-power');
     console.log('by ' + info.authors);
     setTimeout(function () {
@@ -287,14 +310,25 @@ var THE_TOWER_OF_POWER = (function () {
   init();
 }); // iife is called on document load (so is it really an iife or just a func expression?? 🤔)
 
-var ctb = function () {
-  var btn = document.createElement('button');
-  btn.style = 'padding: 10px; border: 1px solid #FFFFFF; border-radius: 3px; background: #111111; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); outline: none; font-family: "Courier New"; font-size: 3vw; color: #FFFFFF';
-  btn.innerHTML = 'Click to begin';
-  btn.onclick = function () {
-    THE_TOWER_OF_POWER();
-    btn.remove();
+var THE_TOWER_OF_POWER_CTB = function () {
+  var initCSS = function () {
+    var style = document.styleSheets[0];
+    style.insertRule('@font-face { font-family: "Arcade"; src: url(\'./assets/arcade_n.ttf\'); }');
+    style.insertRule('body { margin: 0; }');
+    style.insertRule('div { font-family: "Arcade"; font-size: 16px; }');
+    style.insertRule('h1, h2 { padding: 10px; margin: 0; }');
+    style.insertRule('ul { padding-left: 40px; }');
+    style.insertRule('li { padding: 2px; }');
+    style.insertRule('div, button { -webkit-user-select: none; -moz-user-select: none; user-select: none; user-select: none; }');
+    style.insertRule('.btn:active { border: 2px inset #AAAAAA !important; }');
+    style.insertRule('.hidden { display: none; }');
   };
+
+  var btn = document.createElement('button');
+  btn.style = 'padding: 10px; border: 1px solid #FFFFFF; border-radius: 3px; background: #000000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); outline: none; font-family: "Courier New"; font-size: 3vw; color: #FFFFFF';
+  btn.innerHTML = 'Click to begin';
+  btn.onclick = function () { THE_TOWER_OF_POWER(); btn.remove(); };
+  initCSS();
   document.body.appendChild(btn);
 };
 
