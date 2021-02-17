@@ -27,6 +27,7 @@ var THE_TOWER_OF_POWER = (function () {
       }
     };
     addEventListener('resize', resize);
+    addEventListener('orientationchange', resize);
     addEventListener('blur', function () {
 
     });
