@@ -223,8 +223,8 @@ var THE_TOWER_OF_POWER = (function () {
       var drawStatic = function () {
         lStage.drawImage(title, lCanvas.width * 0.75 - title.width / 2, 32);
         lStage.drawText({ text: 'created by literal line', color: 7, x: 30, y: 25 });
-        lStage.drawText({ text: 'licensed under  the', color: 7, x: 32, y: 28 });
-        lStage.drawText({ text: 'gnu  gpl v3', color: 7, x: 36, y: 29 });
+        lStage.drawText({ text: 'licensed under', color: 7, x: 35, y: 27 });
+        lStage.drawText({ text: 'the gnu gpl v3', color: 7, x: 35, y: 28 });
         lStage.drawText({ text: 'more at quique.gq', color: 0, x: 33, y: 32 });
         lStage.drawText({ text: 'the tower of', color: 2, x: 7, y: 5 });
         lStage.drawText({ text: 'power', color: 2, x: 11, y: 7 });
