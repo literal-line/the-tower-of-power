@@ -88,7 +88,7 @@ var THE_TOWER_OF_POWER = (function () {
     console.log('by ' + info.authors);
     setTimeout(function () {
       requestAnimationFrame(game.loop);
-    }, 100);
+    }, 500);
   };
 
   var playing = {};
