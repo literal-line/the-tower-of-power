@@ -70,9 +70,9 @@ var THE_TOWER_OF_POWER = (function () {
       '<li>Insert coin: Shift</li>' +
       '<li>Player 1 start: Enter</li>' +
       '<ul>';
-    helpBtn.style = 'background: #000000 url(\'./assets/buttonHelp.png\'); background-size: cover; border: 2px outset #AAAAAA; position: fixed; width: 52px; height: 52px; bottom: 5px; right: 5px; outline: none; image-rendering: pixelated';
-    helpPopup.style = 'background: #000000; border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF';
-    helpBtn.classList.add('btn');
+    helpBtn.style = 'background: #000066 url(\'./assets/buttonHelp.png\'); background-size: cover; border: 2px outset #3333FF; position: fixed; width: 52px; height: 52px; bottom: 5px; right: 5px; outline: none; image-rendering: pixelated';
+    helpPopup.style = 'background: rgba(0, 0, 0, 0.75); border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF';
+    helpBtn.classList.add('btn3d');
     helpPopup.classList.add('hidden');
     helpBtn.onclick = function () { helpPopup.classList.toggle('hidden'); this.blur(); };
     document.body.insertAdjacentElement('afterbegin', helpBtn);
@@ -157,14 +157,16 @@ var THE_TOWER_OF_POWER = (function () {
       var lStage = lCanvas.getContext('2d');
       lCanvas.width = info.width;
       lCanvas.height = info.height;
-      var number = 0;
+      var num = 0;
+      var numLimit = 8;
+      var interval = 8;
 
       return function () {
-        if (!((timer + 2) % 2) && number < 8) {
-          for (var y = 0; y < lCanvas.height / 8; y++) lStage.drawText({ text: repeatChar(number, Math.floor(canvas.width / 8)), color: number, x: 0, y: y });
-          number++;
+        if (!(timer % interval) && num < numLimit) {
+          for (var y = 0; y < lCanvas.height / 8; y++) lStage.drawText({ text: repeatChar(num, Math.floor(canvas.width / 8)), color: num, x: 0, y: y });
+          num++;
         }
-        if (timer >= 60) STATE = 'intro';
+        if (timer >= (numLimit - 1) * interval + 60) STATE = 'intro';
         stage.drawImage(lCanvas, 0, 0);
       }
     })();
@@ -320,7 +322,7 @@ var THE_TOWER_OF_POWER_CTB = function () {
     style.insertRule('ul { padding-left: 40px; }');
     style.insertRule('li { padding: 2px; }');
     style.insertRule('div, button { -webkit-user-select: none; -moz-user-select: none; user-select: none; user-select: none; }');
-    style.insertRule('.btn:active { border: 2px inset #AAAAAA !important; }');
+    style.insertRule('.btn3d:active { border-style: inset !important; }');
     style.insertRule('.hidden { display: none; }');
   };
 
