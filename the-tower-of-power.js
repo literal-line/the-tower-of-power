@@ -8,7 +8,7 @@ var THE_TOWER_OF_POWER = (function () {
   var stage = canvas.getContext('2d');
   var info = {
     version: 'v0.1-xxxxxxxx-xxxest',
-    authors: 'Literal Line',
+    authors: ['Literal Line'],
     width: 224,
     height: 288,
     bg: '#000000',
@@ -68,11 +68,11 @@ var THE_TOWER_OF_POWER = (function () {
       '<ul>' +
       '<li>Directional: Arrow Keys or WASD</li>' +
       '<li>Attack: Space</li>' +
-      '<li>Insert coin: Shift</li>' +
+      '<li>Insert coin: Right shift</li>' +
       '<li>Player 1 start: Enter</li>' +
       '<ul>';
     helpBtn.style = 'background: #000066 url(\'./assets/buttonHelp.png\'); background-size: cover; border: 2px outset #3333FF; position: fixed; width: 52px; height: 52px; bottom: 5px; right: 5px; outline: none; image-rendering: pixelated';
-    helpPopup.style = 'background: rgba(0, 0, 0, 0.75); border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF';
+    helpPopup.style = 'background: rgba(0, 0, 0, 0.9); border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF';
     helpBtn.classList.add('btn3d');
     helpPopup.classList.add('hidden');
     helpBtn.onclick = function () { helpPopup.classList.toggle('hidden'); this.blur(); };
