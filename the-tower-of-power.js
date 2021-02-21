@@ -62,7 +62,7 @@ var THE_TOWER_OF_POWER = (function () {
     var helpPopup = document.createElement('div');
     helpPopup.innerHTML =
       '<h1>Help</h1>' +
-      '<hr style="border: 1px solid #FFFFFF"></hr>'+
+      '<hr style="border: 1px solid #FFFFFF"></hr>' +
       '<h2>Controls</h2>' +
       '<ul>' +
       '<li>Directional: Arrow Keys or WASD</li>' +
