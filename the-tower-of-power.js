@@ -1,7 +1,7 @@
 // the-tower-of-power by Literal Line
 // more at quique.gq
 
-var THE_TOWER_OF_POWER = (function () {
+var THE_TOWER_OF_POWER = function () {
   'use strict';
 
   var canvas = document.createElement('canvas');
@@ -159,15 +159,15 @@ var THE_TOWER_OF_POWER = (function () {
       lCanvas.width = info.width;
       lCanvas.height = info.height;
       var num = 0;
-      var numLimit = 8;
-      var interval = 8;
+      var numLimit = 14;
+      var interval = 3;
 
       return function () {
-        if (!(timer % interval) && num < numLimit) {
-          for (var y = 0; y < lCanvas.height / 8; y++) lStage.drawText({ text: repeatChar(num, Math.floor(canvas.width / 8)), color: num, x: 0, y: y });
+        if (!(timer % interval) && num <= numLimit) {
+          for (var y = 0; y < lCanvas.height / 8; y++) lStage.drawText({ text: repeatChar(num.toString(16), Math.floor(canvas.width / 8)), color: num, x: 0, y: y });
           num++;
         }
-        if (timer >= (numLimit - 1) * interval + 60) STATE = 'intro';
+        if (timer >= numLimit * interval + 60) STATE = 'intro';
         stage.drawImage(lCanvas, 0, 0);
       }
     })();
@@ -207,8 +207,8 @@ var THE_TOWER_OF_POWER = (function () {
     })();
 
     var pointsOverlay = function () {
-      stage.drawText({ text: '1up', color: 0, x: 3, y: 0 });
-      stage.drawText({ text: 'high score', color: 3, x: 9, y: 0 });
+      stage.drawText({ text: '1up', color: 3, x: 3, y: 0 });
+      stage.drawText({ text: 'high score', color: 10, x: 9, y: 0 });
     };
 
     var title = (function () {
@@ -219,30 +219,47 @@ var THE_TOWER_OF_POWER = (function () {
       var title = assets.textures.title;
       var lTimer = 0;
       var xOffset = -info.width;
+      var showHighscores = false;
       var credits = 0;
-      var lastHighscores;
       var enter = false;
 
-      var drawStatic = function () {
+      var drawMain = function () {
         lStage.drawImage(title, lCanvas.width * 0.75 - title.width / 2, 32);
-        lStage.drawText({ text: 'created by literal line', color: 7, x: 30, y: 25 });
-        lStage.drawText({ text: 'licensed under', color: 7, x: 35, y: 27 });
-        lStage.drawText({ text: 'the gnu gpl v3', color: 7, x: 35, y: 28 });
-        lStage.drawText({ text: 'more at quique.gq', color: 0, x: 33, y: 32 });
-        lStage.drawText({ text: 'the tower of', color: 2, x: 7, y: 5 });
-        lStage.drawText({ text: 'power', color: 2, x: 11, y: 7 });
-        lStage.drawText({ text: 'best 5', color: 0, x: 10, y: 12 });
-        lStage.drawText({ text: 'rank  score floor  name', color: 7, x: 2, y: 16 });
+        lStage.drawText({ text: 'created by literal line', color: 0, x: 30, y: 25 });
+        lStage.drawText({ text: 'licensed under', color: 0, x: 35, y: 27 });
+        lStage.drawText({ text: 'the gnu gpl v3', color: 0, x: 35, y: 28 });
+        lStage.drawText({ text: 'more at quique.gq', color: 3, x: 33, y: 32 });
       };
 
-      var updateHighscores = function () {
+      var drawStory = function () {
+        lStage.drawText({ text: 'in another time', color: 9, x: 3, y: 4 });
+        lStage.drawText({ text: 'in another world...', color: 9, x: 6, y: 6 });
+        lStage.drawText({ text: 'the blue power staff', color: 9, x: 0, y: 9 });
+        lStage.drawText({ text: 'kept the kingdom in peace', color: 9, x: 3, y: 11 });
+        lStage.drawText({ text: 'but the evil demon kukulkan', color: 9, x: 0, y: 14 });
+        lStage.drawText({ text: 'stole the rod and', color: 9, x: 3, y: 16 });
+        lStage.drawText({ text: 'imprisoned the maiden', color: 9, x: 6, y: 18 });
+        lStage.drawText({ text: 'Akna in a tower', color: 9, x: 9, y: 20 });
+        lStage.drawText({ text: 'the prince Tadeas', color: 9, x: 0, y: 23 });
+        lStage.drawText({ text: 'wore golden armor', color: 9, x: 2, y: 25 });
+        lStage.drawText({ text: 'and dueled monsters', color: 9, x: 4, y: 27 });
+        lStage.drawText({ text: 'to save Akna in', color: 9, x: 6, y: 29 });
+        lStage.drawText({ text: 'the tower of power', color: 14, x: 8, y: 31 });
+      };
+
+      var drawHighscores = function () {
+        lStage.clearRect(0, 0, lCanvas.width / 2, lCanvas.height);
+        lStage.drawText({ text: 'the tower of', color: 8, x: 7, y: 5 });
+        lStage.drawText({ text: 'power', color: 8, x: 11, y: 7 });
+        lStage.drawText({ text: 'best 5', color: 3, x: 10, y: 12 });
+        lStage.drawText({ text: 'rank  score floor  name', color: 0, x: 2, y: 16 });
         var i = 0;
         highscores.forEach(function (cur) {
           i++;
           var y = 17 + i * 2;
-          lStage.drawText({ text: i + '    ' + cur.score, color: 7, x: 3, y: y });
-          lStage.drawText({ text: cur.floor, color: 7, x: 17, y: y });
-          lStage.drawText({ text: cur.name, color: 7, x: 21, y: y });
+          lStage.drawText({ text: i + '    ' + cur.score, color: 0, x: 3, y: y });
+          lStage.drawText({ text: cur.floor, color: 0, x: 17, y: y });
+          lStage.drawText({ text: cur.name, color: 0, x: 21, y: y });
         });
       };
 
@@ -254,22 +271,24 @@ var THE_TOWER_OF_POWER = (function () {
         }
         if (!keys['ShiftRight']) enter = false;
         if (credits > 99) credits = 99;
-        stage.drawText({ text: 'credit' + repeatChar(' ', 3 - credits.toString().length) + credits, color: 7, x: 19, y: 35 });
+        stage.drawText({ text: 'credit' + repeatChar(' ', 3 - credits.toString().length) + credits, color: 0, x: 19, y: 35 });
       };
 
       var doScrolling = function () {
-        if (lTimer > 300 && lTimer <= 524) xOffset = -info.width + lTimer - 300;
-        if (lTimer > 824 && lTimer <= 1048) xOffset = -lTimer + 824;
+        if (lTimer === 480) {
+          lStage.clearRect(0, 0, lCanvas.width / 2, lCanvas.height);
+          if (showHighscores) drawHighscores(); else drawStory();
+          showHighscores = !showHighscores;
+        }
+        if (lTimer > 480 && lTimer <= 704) xOffset = -info.width + lTimer - 480;
+        if (lTimer > 1184 && lTimer <= 1408) xOffset = -lTimer + 1184;
         lTimer++;
-        if (lTimer > 1048) lTimer = 0;
+        if (lTimer > 1408) lTimer = 0;
       };
 
+      drawMain();
+
       return function () {
-        if (lastHighscores !== highscores) {
-          lStage.clearRect(0, 0, lStage.width, lStage.height);
-          drawStatic();
-          updateHighscores();
-        }
         doCredits();
         doScrolling();
         stage.drawImage(lCanvas, xOffset, 0);
@@ -311,7 +330,7 @@ var THE_TOWER_OF_POWER = (function () {
   })();
 
   init();
-}); // iife is called on document load (so is it really an iife or just a func expression?? 🤔)
+}; // iife is called on document load (so is it really an iife or just a func expression?? 🤔)
 
 var THE_TOWER_OF_POWER_CTB = function () {
   var initCSS = function () {
