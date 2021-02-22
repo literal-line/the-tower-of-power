@@ -85,7 +85,7 @@ var THE_TOWER_OF_POWER = function () {
     initHelp();
     initCanvas();
     document.body.insertAdjacentElement('afterbegin', canvas);
-    console.log('the-tower-of-power');
+    console.log('the-tower-of-power ' + info.version);
     console.log('by ' + info.authors);
     setTimeout(function () {
       requestAnimationFrame(game.loop);
@@ -119,7 +119,7 @@ var THE_TOWER_OF_POWER = function () {
   ];
   CanvasRenderingContext2D.prototype.drawText = function (obj) {
     var t = obj.text.toString().toUpperCase();
-    var c = obj.color;
+    var c = obj.color % 15;
     var x = obj.x;
     var y = obj.y;
     for (var i = 0; i < t.length; i++) {
@@ -137,12 +137,14 @@ var THE_TOWER_OF_POWER = function () {
     audio: {
       silence: new GameAudio('assets/5-seconds-of-silence.mp3'),
       jingle: new GameAudio('./assets/jingle.mp3'),
-      insertCredit: new GameAudio('./assets/insertCredit.mp3')
+      insertCredit: new GameAudio('./assets/insertCredit.mp3'),
+      roundStart: new GameAudio('./assets/roundStart.mp3')
     }
   };
 
   var game = (function () {
     var STATE = 'init';
+    var currentFloor = 10;
     var timer = 0;
 
     var highscores = [
@@ -159,7 +161,7 @@ var THE_TOWER_OF_POWER = function () {
       lCanvas.width = info.width;
       lCanvas.height = info.height;
       var num = 0;
-      var numLimit = 14;
+      var numLimit = 15;
       var interval = 3;
 
       return function () {
@@ -221,7 +223,6 @@ var THE_TOWER_OF_POWER = function () {
       var xOffset = -info.width;
       var showHighscores = false;
       var credits = 0;
-      var enter = false;
 
       var drawMain = function () {
         lStage.drawImage(title, lCanvas.width * 0.75 - title.width / 2, 32);
@@ -263,35 +264,81 @@ var THE_TOWER_OF_POWER = function () {
         });
       };
 
-      var doCredits = function () {
-        if (keys['ShiftRight'] && !enter) {
-          credits++
-          assets.audio.insertCredit.play(0.1);
-          enter = true;
+      var doCredits = (function () {
+        var shift = false;
+        
+        return function () {
+          if (keys['Enter'] && credits) STATE = 'stage';
+          if (keys['ShiftRight'] && !shift) {
+            lStage.clearRect(lCanvas.width / 2, 200, 224, 88);
+            lStage.drawText({ text: 'push start button', color: 0, x: 34, y: 28 });
+            lStage.drawText({ text: 'only one player', color: 0, x: 35, y: 30 });
+            credits++
+            assets.audio.insertCredit.play(0.1);
+            shift = true;
+          }
+          if (!keys['ShiftRight']) shift = false;
+          if (credits > 99) credits = 99;
+          stage.drawText({ text: 'credit' + repeatChar(' ', 3 - credits.toString().length) + credits, color: 0, x: 19, y: 35 });
         }
-        if (!keys['ShiftRight']) enter = false;
-        if (credits > 99) credits = 99;
-        stage.drawText({ text: 'credit' + repeatChar(' ', 3 - credits.toString().length) + credits, color: 0, x: 19, y: 35 });
-      };
+      })();
 
-      var doScrolling = function () {
-        if (lTimer === 480) {
-          lStage.clearRect(0, 0, lCanvas.width / 2, lCanvas.height);
+      var doTiming = function (time1, time2) {
+        var w = lCanvas.width / 2;
+        if (credits) {
+          xOffset = -w;
+          return;
+        }
+        var event1 = time1 * 60;
+        var event1End = event1 + w;
+        var event2 = event1End + time2 * 60;
+        var event2End = event2 + w;
+        if (lTimer === event1) {
+          lStage.clearRect(0, 0, w, lCanvas.height);
           if (showHighscores) drawHighscores(); else drawStory();
           showHighscores = !showHighscores;
         }
-        if (lTimer > 480 && lTimer <= 704) xOffset = -info.width + lTimer - 480;
-        if (lTimer > 1184 && lTimer <= 1408) xOffset = -lTimer + 1184;
+        if (lTimer > event1 && lTimer <= event1End) xOffset = -w + lTimer - event1;
+        if (lTimer > event2 && lTimer <= event2End) xOffset = -lTimer + event2;
         lTimer++;
-        if (lTimer > 1408) lTimer = 0;
+        if (lTimer > event2End) lTimer = 0;
       };
 
       drawMain();
 
       return function () {
         doCredits();
-        doScrolling();
+        doTiming(5, 10);
         stage.drawImage(lCanvas, xOffset, 0);
+      }
+    })();
+
+    var playStage = (function () {
+      var lCanvas = document.createElement('canvas');
+      var lStage = lCanvas.getContext('2d');
+      lCanvas.width = info.width;
+      lCanvas.height = info.height;
+      var lastFloor = 0;
+      var intro;
+
+      var begin = function (floor) {
+        assets.audio.roundStart.play();
+        lStage.drawText({ text: 'get ready', color: 10, x: 9, y: 13 });
+        lStage.drawText({ text: 'player one', color: 10, x: 9, y: 15 });
+        lStage.drawText({ text: 'floor', color: 10, x: 11, y: 18 });
+        lStage.drawText({ text: floor, color: 8, x: 14 - (floor.toString().length - 1), y: 20 });
+        lStage.drawText({ text: 'ill work on this tomorrow', color: 3, x: 1, y: 24 });
+        lStage.drawText({ text: 'im going to bed', color: 3, x: 6, y: 26 });
+      };
+
+      return function (floor) {
+        if (floor !== lastFloor) {
+          intro = true;
+          begin(floor);
+          lastFloor = floor;
+        }
+        if (!intro) play(floor);
+        stage.drawImage(lCanvas, 0, 0);
       }
     })();
 
@@ -316,6 +363,10 @@ var THE_TOWER_OF_POWER = function () {
               break;
             case 'title':
               title();
+              pointsOverlay();
+              break;
+            case 'stage':
+              playStage(currentFloor);
               pointsOverlay();
               break;
             default:
