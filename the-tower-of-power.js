@@ -145,6 +145,7 @@ var THE_TOWER_OF_POWER = function () {
   var game = (function () {
     var STATE = 'init';
     var currentFloor = 10;
+    var lives = 3;
     var timer = 0;
 
     var highscores = [
