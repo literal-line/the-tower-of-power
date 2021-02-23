@@ -239,7 +239,7 @@ var THE_TOWER_OF_POWER = function () {
         lStage.drawText({ text: 'the blue power staff', color: 9, x: 0, y: 9 });
         lStage.drawText({ text: 'kept the kingdom in peace', color: 9, x: 3, y: 11 });
         lStage.drawText({ text: 'but the evil demon kukulkan', color: 9, x: 0, y: 14 });
-        lStage.drawText({ text: 'stole the rod and', color: 9, x: 3, y: 16 });
+        lStage.drawText({ text: 'stole the staff and', color: 9, x: 3, y: 16 });
         lStage.drawText({ text: 'imprisoned the maiden', color: 9, x: 6, y: 18 });
         lStage.drawText({ text: 'Akna in a tower', color: 9, x: 9, y: 20 });
         lStage.drawText({ text: 'the prince Tadeas', color: 9, x: 0, y: 23 });
