@@ -402,7 +402,7 @@ var THE_TOWER_OF_POWER = function () {
   })();
 
   init();
-}; // iife is called on document load (so is it really an iife or just a func expression?? 🤔)
+};
 
 var THE_TOWER_OF_POWER_CTB = function () {
   var initCSS = function () {
