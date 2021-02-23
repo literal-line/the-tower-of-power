@@ -113,13 +113,19 @@ var THE_TOWER_OF_POWER = function () {
     this.audio.play();
   };
 
+  GameAudio.prototype.stop = function () {
+    this.audio.pause();
+    this.audio.currentTime = 0;
+    delete playing[this.audio.src];
+  };
+
   CanvasRenderingContext2D.prototype.textChars = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
     'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '!', '\'', '*', '-', '.', ':', '='
   ];
   CanvasRenderingContext2D.prototype.drawText = function (obj) {
     var t = obj.text.toString().toUpperCase();
-    var c = obj.color % 15;
+    var c = obj.color % 16;
     var x = obj.x;
     var y = obj.y;
     for (var i = 0; i < t.length; i++) {
@@ -144,7 +150,7 @@ var THE_TOWER_OF_POWER = function () {
 
   var game = (function () {
     var STATE = 'init';
-    var currentFloor = 10;
+    var currentFloor = 1;
     var lives = 3;
     var timer = 0;
 
@@ -238,7 +244,7 @@ var THE_TOWER_OF_POWER = function () {
         lStage.drawText({ text: 'in another world...', color: 9, x: 6, y: 6 });
         lStage.drawText({ text: 'the blue power staff', color: 9, x: 0, y: 9 });
         lStage.drawText({ text: 'kept the kingdom in peace', color: 9, x: 3, y: 11 });
-        lStage.drawText({ text: 'but the evil demon kukulkan', color: 9, x: 0, y: 14 });
+        lStage.drawText({ text: 'but the evil demon cabrakan', color: 9, x: 0, y: 14 });
         lStage.drawText({ text: 'stole the staff and', color: 9, x: 3, y: 16 });
         lStage.drawText({ text: 'imprisoned the maiden', color: 9, x: 6, y: 18 });
         lStage.drawText({ text: 'Akna in a tower', color: 9, x: 9, y: 20 });
@@ -246,7 +252,7 @@ var THE_TOWER_OF_POWER = function () {
         lStage.drawText({ text: 'wore golden armor', color: 9, x: 2, y: 25 });
         lStage.drawText({ text: 'and dueled monsters', color: 9, x: 4, y: 27 });
         lStage.drawText({ text: 'to save Akna in', color: 9, x: 6, y: 29 });
-        lStage.drawText({ text: 'the tower of power', color: 14, x: 8, y: 31 });
+        lStage.drawText({ text: 'the tower of power', color: 15, x: 8, y: 31 });
       };
 
       var drawHighscores = function () {
@@ -319,26 +325,40 @@ var THE_TOWER_OF_POWER = function () {
       var lStage = lCanvas.getContext('2d');
       lCanvas.width = info.width;
       lCanvas.height = info.height;
+      var lTimer = 0;
       var lastFloor = 0;
-      var intro;
+      var hitboxes = [];
 
-      var begin = function (floor) {
+      var intro = function (floor) {
+        assets.audio.insertCredit.stop();
         assets.audio.roundStart.play();
         lStage.drawText({ text: 'get ready', color: 10, x: 9, y: 13 });
         lStage.drawText({ text: 'player one', color: 10, x: 9, y: 15 });
         lStage.drawText({ text: 'floor', color: 10, x: 11, y: 18 });
         lStage.drawText({ text: floor, color: 8, x: 14 - (floor.toString().length - 1), y: 20 });
-        lStage.drawText({ text: 'ill work on this tomorrow', color: 3, x: 1, y: 24 });
-        lStage.drawText({ text: 'im going to bed', color: 3, x: 6, y: 26 });
+      };
+
+      var init = function (floor) {
+        //
+      };
+
+      var play = function () {
+        //
+      };
+
+      var doTiming = function (floor) {
+        if (!lTimer || lTimer === 209) lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
+        if (!lTimer) intro(floor);
+        if (lTimer > 209) play(floor);
+        lTimer++;
       };
 
       return function (floor) {
         if (floor !== lastFloor) {
-          intro = true;
-          begin(floor);
           lastFloor = floor;
+          lTimer = 0;
         }
-        if (!intro) play(floor);
+        doTiming(floor);
         stage.drawImage(lCanvas, 0, 0);
       }
     })();
