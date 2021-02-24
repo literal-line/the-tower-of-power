@@ -138,7 +138,8 @@ var THE_TOWER_OF_POWER = function () {
     textures: {
       font: createTexture('./assets/font.png'),
       logo: createTexture('./assets/quiquePixel.png'),
-      title: createTexture('./assets/title.png')
+      title: createTexture('./assets/title.png'),
+      tilesFloor: createTexture('./assets/tilesFloor.png')
     },
     audio: {
       silence: new GameAudio('assets/5-seconds-of-silence.mp3'),
@@ -215,10 +216,28 @@ var THE_TOWER_OF_POWER = function () {
       }
     })();
 
-    var pointsOverlay = function () {
-      stage.drawText({ text: '1up', color: 3, x: 3, y: 0 });
-      stage.drawText({ text: 'high score', color: 11, x: 9, y: 0 });
-    };
+    var pointsOverlay = (function () {
+      var lCanvas = document.createElement('canvas');
+      var lStage = lCanvas.getContext('2d');
+      lCanvas.width = 160;
+      lCanvas.height = 16;
+      var lastTopScore = 0;
+
+      var update = function () {
+        lStage.drawText({ text: '1up', color: 3, x: 0, y: 0 });
+        lStage.drawText({ text: 'high score', color: 11, x: 6, y: 0 });
+        lStage.drawText({ text: lastTopScore, color: 9, x: 9, y: 1 });
+      };
+
+      return function () {
+        var topScore = highscores[0].score;
+        if (topScore !== lastTopScore) {
+          lastTopScore = topScore;
+          update();
+        }
+        stage.drawImage(lCanvas, 24, 0);
+      }
+    })();
 
     var title = (function () {
       var lCanvas = document.createElement('canvas');
@@ -273,7 +292,7 @@ var THE_TOWER_OF_POWER = function () {
 
       var doCredits = (function () {
         var shift = false;
-        
+
         return function () {
           if (keys['Enter'] && credits) STATE = 'stage';
           if (keys['ShiftRight'] && !shift) {
@@ -323,11 +342,17 @@ var THE_TOWER_OF_POWER = function () {
     var playStage = (function () {
       var lCanvas = document.createElement('canvas');
       var lStage = lCanvas.getContext('2d');
-      lCanvas.width = info.width;
+      lCanvas.width = info.width * 2;
       lCanvas.height = info.height;
+      var tilesFloor = assets.textures.tilesFloor;
+      var tilesWidth = 10;
+      var tilesHeight = 32;
       var lTimer = 0;
       var lastFloor = 0;
+      var floors;
       var hitboxes = [];
+
+      requestText('./floors.json', function (json) { floors = JSON.parse(json).floors; });
 
       var intro = function (floor) {
         assets.audio.insertCredit.stop();
@@ -339,7 +364,13 @@ var THE_TOWER_OF_POWER = function () {
       };
 
       var init = function (floor) {
-        //
+        for (var y = 0; y < tilesHeight; y++) {
+          for (var x = 0; x < tilesWidth; x++) {
+            var tileCur = convertBase(floors[currentFloor - 1][y].charAt(x), 64, 10);
+            //console.log(tileCur)
+            if (tileCur) lStage.drawImage(tilesFloor, (tileCur - 1) % 9 * 8, Math.floor((tileCur - 1) / 9) * 8, 8, 8, x * 8, (y + 2) * 8, 8, 8);
+          }
+        }
       };
 
       var play = function () {
@@ -349,7 +380,7 @@ var THE_TOWER_OF_POWER = function () {
       var doTiming = function (floor) {
         if (!lTimer || lTimer === 209) lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
         if (!lTimer) intro(floor);
-        if (lTimer > 209) play(floor);
+        if (lTimer === 209) init(floor);
         lTimer++;
       };
 
@@ -435,6 +466,15 @@ function rndInt(max) {
 function repeatChar(char, amt) {
   return new Array(amt + 1).join(char);
 }
+
+function requestText(url, callback) {
+  var r = new XMLHttpRequest();
+  r.open('GET', url);
+  r.onload = function () {
+    callback(r.responseText);
+  };
+  r.send();
+};
 
 function createTexture(src) {
   var img = document.createElement('img');
