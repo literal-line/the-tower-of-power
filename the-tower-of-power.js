@@ -481,9 +481,7 @@ function repeatChar(char, amt) {
 function requestText(url, callback) {
   var r = new XMLHttpRequest();
   r.open('GET', url);
-  r.onload = function () {
-    callback(r.responseText);
-  };
+  r.onload = function () { callback(r.responseText); };
   r.send();
 };
 
