@@ -342,11 +342,12 @@ var THE_TOWER_OF_POWER = function () {
     var playStage = (function () {
       var lCanvas = document.createElement('canvas');
       var lStage = lCanvas.getContext('2d');
-      lCanvas.width = info.width * 2;
+      lCanvas.width = info.width * 2 + 16;
       lCanvas.height = info.height;
       var tilesFloor = assets.textures.tilesFloor;
-      var tilesWidth = 10;
+      var tilesWidth = 58;
       var tilesHeight = 32;
+      var offsetX = 0;
       var lTimer = 0;
       var lastFloor = 0;
       var floors;
@@ -366,15 +367,24 @@ var THE_TOWER_OF_POWER = function () {
       var init = function (floor) {
         for (var y = 0; y < tilesHeight; y++) {
           for (var x = 0; x < tilesWidth; x++) {
-            var tileCur = convertBase(floors[currentFloor - 1][y].charAt(x), 64, 10);
-            //console.log(tileCur)
+            var tileCur = convertBase(floors[currentFloor.toString()][y].charAt(x), 64, 10);
             if (tileCur) lStage.drawImage(tilesFloor, (tileCur - 1) % 9 * 8, Math.floor((tileCur - 1) / 9) * 8, 8, 8, x * 8, (y + 2) * 8, 8, 8);
           }
         }
+        // save image
+        // var image = lCanvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+        // window.location.href = image;
       };
 
       var play = function () {
         //
+      };
+
+      var pan = function () {
+        if (keys['KeyD']) offsetX -= 4;
+        if (keys['KeyA']) offsetX += 4;
+        if (offsetX < -info.width - 16) offsetX = -info.width - 16;
+        if (offsetX > 0) offsetX = 0;
       };
 
       var doTiming = function (floor) {
@@ -390,7 +400,8 @@ var THE_TOWER_OF_POWER = function () {
           lTimer = 0;
         }
         doTiming(floor);
-        stage.drawImage(lCanvas, 0, 0);
+        pan();
+        stage.drawImage(lCanvas, offsetX, 0);
       }
     })();
 
