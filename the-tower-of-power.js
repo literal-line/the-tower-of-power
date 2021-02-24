@@ -21,9 +21,11 @@ var THE_TOWER_OF_POWER = function () {
     var resize = function () {
       canvas.style.height = window.innerHeight + 'px';
       canvas.style.width = window.innerHeight * (7 / 9) + 'px';
+      canvas.style.paddingTop = '0';
       if (canvas.style.width.split('p')[0] > window.innerWidth) {
         canvas.style.width = window.innerWidth + 'px';
         canvas.style.height = window.innerWidth * (9 / 7) + 'px';
+        canvas.style.paddingTop = window.innerHeight / 2 - parseInt(canvas.style.height) / 2 + 'px';
       }
     };
     addEventListener('resize', resize);
