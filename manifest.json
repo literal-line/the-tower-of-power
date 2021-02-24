@@ -1,0 +1,17 @@
+{
+	"name": "The Tower of Power",
+	"short_name": "The Tower of Power",
+	"theme_color": "#000000",
+	"background_color": "#000000",
+	"display": "fullscreen",
+	"orientation": "portrait",
+	"scope": "/",
+	"start_url": "/",
+	"icons": [
+		{
+			"src": "./favicon144.png",
+			"sizes": "144x144",
+			"type": "image/png"
+		}
+	]
+}
