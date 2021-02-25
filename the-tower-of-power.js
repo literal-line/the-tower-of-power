@@ -380,8 +380,8 @@ var THE_TOWER_OF_POWER = function () {
 
       var init = function (floor) {
         lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
-        player.x = 75;
-        player.y = 75;
+        player.x = 76;
+        player.y = 76;
         for (var y = 0; y < tilesHeight; y++) {
           for (var x = 0; x < tilesWidth; x++) {
             var tileCur = parseInt(convertBase(floors[floor.toString()][y].charAt(x), 64, 10));
@@ -472,7 +472,7 @@ var THE_TOWER_OF_POWER = function () {
       var doTiming = function (floor) {
         if (!lTimer) intro(floor);
         if (lTimer === 209) init(floor);
-        if (lTimer > 359) play();
+        if (lTimer > 389) play();
         lTimer++;
       };
 
