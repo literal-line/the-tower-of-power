@@ -1,6 +1,8 @@
 {
+  "version": "0.1",
+  "manifest_version": 2,
 	"name": "The Tower of Power",
-	"short_name": "The Tower of Power",
+	"short_name": "The Tower",
 	"theme_color": "#000000",
 	"background_color": "#000000",
 	"display": "fullscreen",

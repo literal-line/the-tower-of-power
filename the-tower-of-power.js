@@ -22,7 +22,7 @@ var THE_TOWER_OF_POWER = function () {
       canvas.style.height = window.innerHeight + 'px';
       canvas.style.width = window.innerHeight * (7 / 9) + 'px';
       canvas.style.paddingTop = '0';
-      if (canvas.style.width.split('p')[0] > window.innerWidth) {
+      if (parseInt(canvas.style.width) > window.innerWidth) {
         canvas.style.width = window.innerWidth + 'px';
         canvas.style.height = window.innerWidth * (9 / 7) + 'px';
         canvas.style.paddingTop = window.innerHeight / 2 - parseInt(canvas.style.height) / 2 + 'px';
@@ -91,6 +91,7 @@ var THE_TOWER_OF_POWER = function () {
     console.log('by ' + info.authors);
     setTimeout(function () {
       requestAnimationFrame(game.loop);
+      setInterval(function () { assets.audio.silence.play(); }, 1000 / 60);
     }, 500);
   };
 
@@ -147,7 +148,8 @@ var THE_TOWER_OF_POWER = function () {
       silence: new GameAudio('assets/5-seconds-of-silence.mp3'),
       jingle: new GameAudio('./assets/jingle.mp3'),
       insertCredit: new GameAudio('./assets/insertCredit.mp3'),
-      roundStart: new GameAudio('./assets/roundStart.mp3')
+      roundStart: new GameAudio('./assets/roundStart.mp3'),
+      roundPlay: new GameAudio('./assets/roundPlay.mp3')
     }
   };
 
@@ -248,7 +250,7 @@ var THE_TOWER_OF_POWER = function () {
       lCanvas.height = info.height;
       var title = assets.textures.title;
       var lTimer = 0;
-      var xOffset = -info.width;
+      var scrollX = -info.width;
       var showHighscores = false;
       var credits = 0;
 
@@ -314,7 +316,7 @@ var THE_TOWER_OF_POWER = function () {
       var doTiming = function (time1, time2) {
         var w = lCanvas.width / 2;
         if (credits) {
-          xOffset = -w;
+          scrollX = -w;
           return;
         }
         var event1 = time1 * 60;
@@ -326,8 +328,8 @@ var THE_TOWER_OF_POWER = function () {
           if (showHighscores) drawHighscores(); else drawStory();
           showHighscores = !showHighscores;
         }
-        if (lTimer > event1 && lTimer <= event1End) xOffset = -w + lTimer - event1;
-        if (lTimer > event2 && lTimer <= event2End) xOffset = -lTimer + event2;
+        if (lTimer > event1 && lTimer <= event1End) scrollX = -w + lTimer - event1;
+        if (lTimer > event2 && lTimer <= event2End) scrollX = -lTimer + event2;
         lTimer++;
         if (lTimer > event2End) lTimer = 0;
       };
@@ -337,27 +339,37 @@ var THE_TOWER_OF_POWER = function () {
       return function () {
         doCredits();
         doTiming(5, 10);
-        stage.drawImage(lCanvas, xOffset, 0);
+        stage.drawImage(lCanvas, scrollX, 0);
       }
     })();
 
     var playStage = (function () {
       var lCanvas = document.createElement('canvas');
+      var pCanvas = document.createElement('canvas');
       var lStage = lCanvas.getContext('2d');
-      lCanvas.width = info.width * 2 + 16;
-      lCanvas.height = info.height;
+      var pStage = pCanvas.getContext('2d');
+      lCanvas.width = pCanvas.width = info.width * 2 + 16;
+      lCanvas.height = pCanvas.height = info.height;
       var tilesFloor = assets.textures.tilesFloor;
       var tilesWidth = 58;
       var tilesHeight = 32;
-      var offsetX = 0;
+      var scrollX = 0;
+      var player = {
+        x: 0,
+        y: 0,
+        w: 8,
+        h: 8,
+        speed: 1,
+        lastH: '',
+        lastV: ''
+      };
       var lTimer = 0;
       var lastFloor = 0;
       var floors;
-      var hitboxes = [];
-
       requestText('./floors.json', function (json) { floors = JSON.parse(json).floors; });
 
       var intro = function (floor) {
+        lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
         assets.audio.insertCredit.stop();
         assets.audio.roundStart.play();
         lStage.drawText({ text: 'get ready', color: 11, x: 9, y: 13 });
@@ -367,32 +379,100 @@ var THE_TOWER_OF_POWER = function () {
       };
 
       var init = function (floor) {
+        lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
+        player.x = 75;
+        player.y = 75;
         for (var y = 0; y < tilesHeight; y++) {
           for (var x = 0; x < tilesWidth; x++) {
-            var tileCur = convertBase(floors[currentFloor.toString()][y].charAt(x), 64, 10);
+            var tileCur = parseInt(convertBase(floors[floor.toString()][y].charAt(x), 64, 10));
             if (tileCur) lStage.drawImage(tilesFloor, (tileCur - 1) % 9 * 8, Math.floor((tileCur - 1) / 9) * 8, 8, 8, x * 8, (y + 2) * 8, 8, 8);
           }
         }
-        // save image
-        // var image = lCanvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
-        // window.location.href = image;
+      };
+
+      var controls = function () {
+        var collision = function (x, y) {
+          return floors[currentFloor.toString()][Math.floor((y - 16) / 8)].charAt(Math.floor(x / 8)) !== 'j';
+        };
+
+        var boxCollision = function (offsX, offsY) {
+          var x = player.x + offsX;
+          var y = player.y + offsY;
+          var w = player.w;
+          var h = player.h;
+          var points = [
+            collision(x, y - h / 2), // top-mid
+            collision(x, y + h / 2 - 1), // bottom-mid
+            collision(x + w / 2 - 1, y), // right-mid
+            collision(x - w / 2, y), // left-mid
+            collision(x - w / 2, y - h / 2), // top-left
+            collision(x + w / 2 - 1, y - h / 2), // top-right
+            collision(x - w / 2, y + h / 2 - 1), // bottom-left
+            collision(x + w / 2 - 1, y + h / 2 - 1) // bottom-right
+          ];
+          return points.some(function (cur) { return cur ? true : false; });
+        };
+
+        var cols = 0;
+        var move = function (dir) {
+          var s = player.speed;
+          switch (dir) {
+            case 'up':
+              player.lastV = 'up';
+              if (boxCollision(0, -s)) {
+                cols++;
+                if (cols < 3) move(player.lastH);
+              } else player.y -= s;
+              break;
+            case 'down':
+              player.lastV = 'down';
+              if (boxCollision(0, s)) {
+                cols++;
+                if (cols < 3) move(player.lastH);
+              } else player.y += s;
+              break;
+            case 'right':
+              player.lastH = 'right';
+              if (boxCollision(s, 0)) {
+                cols++;
+                if (cols < 3) move(player.lastV);
+              } else player.x += s;
+              break;
+            case 'left':
+              player.lastH = 'left';
+              if (boxCollision(-s, 0)) {
+                cols++;
+                if (cols < 3) move(player.lastV);
+              } else player.x -= s;
+              break;
+          }
+        };
+
+        var dir = keys['KeyW'] ? 'up' : keys['KeyS'] ? 'down' : keys['KeyD'] ? 'right' : keys['KeyA'] ? 'left' : 0;
+        move(dir);
+      };
+
+      var playerDraw = function () {
+        pStage.fillStyle = '#000000';
+        pStage.fillRect(player.x - player.w, player.y - player.h, player.w * 2, player.h * 2);
       };
 
       var play = function () {
-        //
-      };
-
-      var pan = function () {
-        if (keys['KeyD']) offsetX -= 4;
-        if (keys['KeyA']) offsetX += 4;
-        if (offsetX < -info.width - 16) offsetX = -info.width - 16;
-        if (offsetX > 0) offsetX = 0;
+        var edge1 = info.width / 2;
+        var edge2 = info.width * 1.5 + 16;
+        if (player.x < edge1) scrollX = 0;
+        if (player.x >= edge1 && player.x <= edge2) scrollX = edge1 - player.x;
+        if (player.x > edge2) scrollX = edge1 - edge2;
+        pStage.clearRect(player.x - player.w * 2, player.y - player.h * 2, player.w * 4, player.h * 4);
+        controls();
+        playerDraw();
+        assets.audio.roundPlay.play();
       };
 
       var doTiming = function (floor) {
-        if (!lTimer || lTimer === 209) lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
         if (!lTimer) intro(floor);
         if (lTimer === 209) init(floor);
+        if (lTimer > 359) play();
         lTimer++;
       };
 
@@ -402,8 +482,8 @@ var THE_TOWER_OF_POWER = function () {
           lTimer = 0;
         }
         doTiming(floor);
-        pan();
-        stage.drawImage(lCanvas, offsetX, 0);
+        stage.drawImage(lCanvas, scrollX, 0);
+        stage.drawImage(pCanvas, scrollX, 0);
       }
     })();
 
@@ -438,7 +518,6 @@ var THE_TOWER_OF_POWER = function () {
               throw ('Error: requested state does not exist!');
           }
           timer++;
-          assets.audio.silence.play();
           then = now - (delta % interval);
         }
       }
