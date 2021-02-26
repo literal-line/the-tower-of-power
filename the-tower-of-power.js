@@ -88,8 +88,8 @@ var THE_TOWER_OF_POWER = (function () {
       '<li>Player 1 start: Enter</li>' +
       '<ul>' +
       '</div>';
-    helpBtn.style = 'background: #000066 url(\'./assets/iconHelp.png\'); background-size: cover; border: 2px outset #3333FF; position: fixed; width: 52px; height: 52px; bottom: 5px; right: 5px; outline: none; image-rendering: pixelated';
-    helpPopup.style = 'background: rgba(0, 0, 48, 0.75); border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF; image-rendering: pixelated';
+    helpBtn.style = 'background: #000066 url(\'./assets/iconHelp.png\'); background-size: cover; opacity: 0.3333; border: 2px outset #3333FF; position: fixed; width: 52px; height: 52px; bottom: 5px; right: 5px; outline: none; image-rendering: pixelated';
+    helpPopup.style = 'background: #000030; opacity: 0.75; border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF; image-rendering: pixelated';
     helpBtn.classList.add('btn3d');
     helpPopup.classList.add('hidden');
     helpBtn.onclick = function () { helpPopup.classList.toggle('hidden'); this.blur(); };
@@ -569,6 +569,7 @@ var THE_TOWER_OF_POWER = (function () {
         style.insertRule('li { padding: 2px; }');
         style.insertRule('div, button { -webkit-user-select: none; -moz-user-select: none; user-select: none; user-select: none; }');
         style.insertRule('.btn3d:active { border-style: inset !important; }');
+        style.insertRule('.btn3d:hover { opacity: 1 !important; }');
         style.insertRule('.hidden { display: none; }');
       };
 
