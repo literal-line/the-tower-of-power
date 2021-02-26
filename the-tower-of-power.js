@@ -38,23 +38,22 @@ var THE_TOWER_OF_POWER = (function () {
         canvas.style.paddingTop = window.innerHeight / 2 - parseInt(canvas.style.height) / 2 + 'px';
       }
     };
-    addEventListener('resize', resize);
-    addEventListener('orientationchange', resize);
-    addEventListener('blur', function () {
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
+    window.addEventListener('blur', function () {
 
     });
-    addEventListener('keydown', function (e) {
+    window.addEventListener('keydown', function (e) {
       for (var c in controls) if (controls[c] === e.code) e.preventDefault();
       keys[e.code] = true;
     });
-    addEventListener('keyup', function (e) {
+    window.addEventListener('keyup', function (e) {
       delete keys[e.code];
     });
-    addEventListener('blur', function () {
+    window.addEventListener('blur', function () {
       for (var a in playing) playing[a].pause();
-      console.log(playing)
     });
-    addEventListener('focus', function () {
+    window.addEventListener('focus', function () {
       for (var a in playing) playing[a].play();
     });
 
@@ -77,17 +76,17 @@ var THE_TOWER_OF_POWER = (function () {
     var helpPopup = document.createElement('div');
     helpPopup.innerHTML =
       '<div>' +
-        '<h1 style="float: left">Help</h1>' + '<img style="float: right; transform: translateX(2px)" width="52px" height="52px" src="./assets/iconHelp.png">' +
-        '<hr style="border: 1px solid #FFFFFF; clear: both"></hr>' +
+      '<h1 style="float: left">Help</h1>' + '<img style="float: right; transform: translateX(2px)" width="52px" height="52px" src="./assets/iconHelp.png">' +
+      '<hr style="border: 1px solid #FFFFFF; clear: both"></hr>' +
       '</div>' +
       '<div style="height: 85%; overflow-y: scroll">' +
-        '<h2 style="float: left">Controls</h2>' + '<img style="float: right" width="46px" height="46px" src="./assets/iconControls.png">' +
-        '<ul style="clear: both">' +
-        '<li>Directional: Arrow keys</li>' +
-        '<li>Attack: Left ctrl</li>' +
-        '<li>Insert coin: Right shift</li>' +
-        '<li>Player 1 start: Enter</li>' +
-        '<ul>' +
+      '<h2 style="float: left">Controls</h2>' + '<img style="float: right" width="46px" height="46px" src="./assets/iconControls.png">' +
+      '<ul style="clear: both">' +
+      '<li>Directional: Arrow keys</li>' +
+      '<li>Attack: Left ctrl</li>' +
+      '<li>Insert coin: Right shift</li>' +
+      '<li>Player 1 start: Enter</li>' +
+      '<ul>' +
       '</div>';
     helpBtn.style = 'background: #000066 url(\'./assets/iconHelp.png\'); background-size: cover; border: 2px outset #3333FF; position: fixed; width: 52px; height: 52px; bottom: 5px; right: 5px; outline: none; image-rendering: pixelated';
     helpPopup.style = 'background: rgba(0, 0, 48, 0.75); border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF; image-rendering: pixelated';
@@ -176,9 +175,13 @@ var THE_TOWER_OF_POWER = (function () {
 
   var game = (function () {
     var STATE = 'init';
+    var PAUSE = false;
     var currentFloor = 1;
     var lives = 3;
     var timer = 0;
+
+    window.addEventListener('focus', function () { PAUSE = false; });
+    window.addEventListener('blur', function () { PAUSE = true; });
 
     var highscores = [
       { score: 86434, floor: 99, name: 'chad' },
@@ -520,26 +523,29 @@ var THE_TOWER_OF_POWER = (function () {
         delta = now - then;
 
         if (delta > interval) {
-          stage.clearRect(0, 0, canvas.width, canvas.height);
-          switch (STATE) {
-            case 'init':
-              init();
-              break;
-            case 'intro':
-              intro();
-              break;
-            case 'title':
-              title();
-              pointsOverlay();
-              break;
-            case 'stage':
-              playStage(currentFloor);
-              pointsOverlay();
-              break;
-            default:
-              throw ('Error: requested state does not exist!');
-          }
-          timer++;
+          if (!PAUSE) {
+            canvas.style.filter = 'brightness(100%)';
+            stage.clearRect(0, 0, canvas.width, canvas.height);
+            switch (STATE) {
+              case 'init':
+                init();
+                break;
+              case 'intro':
+                intro();
+                break;
+              case 'title':
+                title();
+                pointsOverlay();
+                break;
+              case 'stage':
+                playStage(currentFloor);
+                pointsOverlay();
+                break;
+              default:
+                throw ('Error: requested state does not exist!');
+            }
+            timer++;
+          } else canvas.style.filter = 'brightness(33.33%)';
           then = now - (delta % interval);
         }
       }
