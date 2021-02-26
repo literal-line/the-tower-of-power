@@ -1,7 +1,7 @@
 // the-tower-of-power by Literal Line
 // more at quique.gq
 
-var THE_TOWER_OF_POWER = function () {
+var THE_TOWER_OF_POWER = (function () {
   'use strict';
 
   var canvas = document.createElement('canvas');
@@ -13,7 +13,17 @@ var THE_TOWER_OF_POWER = function () {
     height: 288,
     bg: '#000000',
     aa: false,
-    fps: 60.606061 // funny original arcade speed
+    fps: 60
+  };
+
+  var controls = {
+    start: 'Enter',
+    credit: 'ShiftRight',
+    up: 'ArrowUp',
+    down: 'ArrowDown',
+    right: 'ArrowRight',
+    left: 'ArrowLeft',
+    action: 'ControlLeft'
   };
 
   var keys = {};
@@ -65,17 +75,21 @@ var THE_TOWER_OF_POWER = function () {
     var helpBtn = document.createElement('button');
     var helpPopup = document.createElement('div');
     helpPopup.innerHTML =
-      '<h1>Help</h1>' +
-      '<hr style="border: 1px solid #FFFFFF"></hr>' +
-      '<h2>Controls</h2>' +
-      '<ul>' +
-      '<li>Directional: Arrow Keys or WASD</li>' +
-      '<li>Attack: Space</li>' +
-      '<li>Insert coin: Right shift</li>' +
-      '<li>Player 1 start: Enter</li>' +
-      '<ul>';
-    helpBtn.style = 'background: #000066 url(\'./assets/buttonHelp.png\'); background-size: cover; border: 2px outset #3333FF; position: fixed; width: 52px; height: 52px; bottom: 5px; right: 5px; outline: none; image-rendering: pixelated';
-    helpPopup.style = 'background: rgba(0, 0, 0, 0.9); border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF';
+      '<div>' +
+        '<h1 style="float: left">Help</h1>' + '<img style="float: right; transform: translateX(2px)" width="52px" height="52px" src="./assets/iconHelp.png">' +
+        '<hr style="border: 1px solid #FFFFFF; clear: both"></hr>' +
+      '</div>' +
+      '<div style="height: 85%; overflow-y: scroll">' +
+        '<h2 style="float: left">Controls</h2>' + '<img style="float: right" width="46px" height="46px" src="./assets/iconControls.png">' +
+        '<ul style="clear: both">' +
+        '<li>Directional: Arrow keys</li>' +
+        '<li>Attack: Left ctrl</li>' +
+        '<li>Insert coin: Right shift</li>' +
+        '<li>Player 1 start: Enter</li>' +
+        '<ul>' +
+      '</div>';
+    helpBtn.style = 'background: #000066 url(\'./assets/iconHelp.png\'); background-size: cover; border: 2px outset #3333FF; position: fixed; width: 52px; height: 52px; bottom: 5px; right: 5px; outline: none; image-rendering: pixelated';
+    helpPopup.style = 'background: rgba(0, 0, 48, 0.75); border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF; image-rendering: pixelated';
     helpBtn.classList.add('btn3d');
     helpPopup.classList.add('hidden');
     helpBtn.onclick = function () { helpPopup.classList.toggle('hidden'); this.blur(); };
@@ -304,8 +318,8 @@ var THE_TOWER_OF_POWER = function () {
         var shift = false;
 
         return function () {
-          if (keys['Enter'] && credits) STATE = 'stage';
-          if (keys['ShiftRight'] && !shift) {
+          if (keys[controls.start] && credits) STATE = 'stage';
+          if (keys[controls.credit] && !shift) {
             lStage.clearRect(lCanvas.width / 2, 200, 224, 88);
             lStage.drawText({ text: 'push start button', color: 0, x: 34, y: 28 });
             lStage.drawText({ text: 'only one player', color: 0, x: 35, y: 30 });
@@ -313,7 +327,7 @@ var THE_TOWER_OF_POWER = function () {
             assets.audio.insertCredit.play(0);
             shift = true;
           }
-          if (!keys['ShiftRight']) shift = false;
+          if (!keys[controls.credit]) shift = false;
           if (credits > 99) credits = 99;
           stage.drawText({ text: 'credit' + repeatChar(' ', 3 - credits.toString().length) + credits, color: 0, x: 19, y: 35 });
         }
@@ -365,7 +379,7 @@ var THE_TOWER_OF_POWER = function () {
         y: 44,
         w: 8,
         h: 8,
-        speed: 0.5,
+        speed: 1,
         lastH: '',
         lastV: ''
       };
@@ -375,6 +389,28 @@ var THE_TOWER_OF_POWER = function () {
       var lastFloor = 0;
       var floors;
       requestText('./floors.json', function (json) { floors = JSON.parse(json).floors; });
+
+      var collision = function (x, y) {
+        return floors[currentFloor.toString()][Math.floor((y - 16) / 8)].charAt(Math.floor(x / 8)) !== 'j';
+      };
+
+      var boxCollision = function (offsX, offsY) {
+        var x = player.x + offsX;
+        var y = player.y + offsY;
+        var w = player.w;
+        var h = player.h;
+        var points = [
+          collision(x, y - h / 2), // top-mid
+          collision(x, y + h / 2 - 1), // bottom-mid
+          collision(x + w / 2 - 1, y), // right-mid
+          collision(x - w / 2, y), // left-mid
+          collision(x - w / 2, y - h / 2), // top-left
+          collision(x + w / 2 - 1, y - h / 2), // top-right
+          collision(x - w / 2, y + h / 2 - 1), // bottom-left
+          collision(x + w / 2 - 1, y + h / 2 - 1) // bottom-right
+        ];
+        return points.some(function (cur) { return cur ? true : false; });
+      };
 
       var intro = function (floor) {
         lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
@@ -396,29 +432,8 @@ var THE_TOWER_OF_POWER = function () {
         }
       };
 
-      var controls = function () {
-        var collision = function (x, y) {
-          return floors[currentFloor.toString()][Math.floor((y - 16) / 8)].charAt(Math.floor(x / 8)) !== 'j';
-        };
-
-        var boxCollision = function (offsX, offsY) {
-          var x = player.x + offsX;
-          var y = player.y + offsY;
-          var w = player.w;
-          var h = player.h;
-          var points = [
-            collision(x, y - h / 2), // top-mid
-            collision(x, y + h / 2 - 1), // bottom-mid
-            collision(x + w / 2 - 1, y), // right-mid
-            collision(x - w / 2, y), // left-mid
-            collision(x - w / 2, y - h / 2), // top-left
-            collision(x + w / 2 - 1, y - h / 2), // top-right
-            collision(x - w / 2, y + h / 2 - 1), // bottom-left
-            collision(x + w / 2 - 1, y + h / 2 - 1) // bottom-right
-          ];
-          return points.some(function (cur) { return cur ? true : false; });
-        };
-
+      var playerControls = function () {
+        var c = controls;
         var cols = 0;
         var move = function (dir) {
           var s = player.speed;
@@ -454,7 +469,7 @@ var THE_TOWER_OF_POWER = function () {
           }
         };
 
-        var dir = keys['KeyW'] ? 'up' : keys['KeyS'] ? 'down' : keys['KeyD'] ? 'right' : keys['KeyA'] ? 'left' : 0;
+        var dir = keys[c.up] ? 'up' : keys[c.down] ? 'down' : keys[c.right] ? 'right' : keys[c.left] ? 'left' : 0;
         move(dir);
       };
 
@@ -470,9 +485,8 @@ var THE_TOWER_OF_POWER = function () {
         if (player.x >= edge1 && player.x <= edge2) scrollX = edge1 - Math.floor(player.x);
         if (player.x > edge2) scrollX = edge1 - edge2;
         pStage.clearRect(player.x - player.w * 2, player.y - player.h * 2, player.w * 4, player.h * 4);
-        controls();
         playerDraw();
-        console.log(player.x)
+        playerControls();
       };
 
       var doTiming = function (floor) {
@@ -531,30 +545,36 @@ var THE_TOWER_OF_POWER = function () {
     }
   })();
 
-  init();
-};
+  return {
+    init: init,
+    controls: function () {
+      return controls;
+    },
+    clickToBegin: function () {
+      var initCSS = function () {
+        var style = document.styleSheets[0];
+        style.insertRule('@font-face { font-family: "Arcade"; src: url(\'./assets/arcade_n.ttf\'); }');
+        style.insertRule('body { margin: 0; }');
+        style.insertRule('div { font-family: "Arcade"; font-size: 16px; }');
+        style.insertRule('h1, h2, h3, h4, h5, h6 { font-style: italic; }');
+        style.insertRule('h1, h2 { padding: 10px; margin: 0; }');
+        style.insertRule('ul { padding-left: 40px; }');
+        style.insertRule('li { padding: 2px; }');
+        style.insertRule('div, button { -webkit-user-select: none; -moz-user-select: none; user-select: none; user-select: none; }');
+        style.insertRule('.btn3d:active { border-style: inset !important; }');
+        style.insertRule('.hidden { display: none; }');
+      };
 
-var THE_TOWER_OF_POWER_CTB = function () {
-  var initCSS = function () {
-    var style = document.styleSheets[0];
-    style.insertRule('@font-face { font-family: "Arcade"; src: url(\'./assets/arcade_n.ttf\'); }');
-    style.insertRule('body { margin: 0; }');
-    style.insertRule('div { font-family: "Arcade"; font-size: 16px; }');
-    style.insertRule('h1, h2 { padding: 10px; margin: 0; }');
-    style.insertRule('ul { padding-left: 40px; }');
-    style.insertRule('li { padding: 2px; }');
-    style.insertRule('div, button { -webkit-user-select: none; -moz-user-select: none; user-select: none; user-select: none; }');
-    style.insertRule('.btn3d:active { border-style: inset !important; }');
-    style.insertRule('.hidden { display: none; }');
-  };
+      var btn = document.createElement('button');
+      btn.style = 'padding: 10px; border: 1px solid #FFFFFF; border-radius: 3px; background: #000000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); outline: none; font-family: "Courier New"; font-size: 3vw; color: #FFFFFF';
+      btn.innerHTML = 'Click to begin';
+      btn.onclick = function () { THE_TOWER_OF_POWER().init(); btn.remove(); };
+      initCSS();
+      document.body.appendChild(btn);
+    }
+  }
+});
 
-  var btn = document.createElement('button');
-  btn.style = 'padding: 10px; border: 1px solid #FFFFFF; border-radius: 3px; background: #000000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); outline: none; font-family: "Courier New"; font-size: 3vw; color: #FFFFFF';
-  btn.innerHTML = 'Click to begin';
-  btn.onclick = function () { THE_TOWER_OF_POWER(); btn.remove(); };
-  initCSS();
-  document.body.appendChild(btn);
-};
 
 // misc functions
 
