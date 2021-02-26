@@ -41,6 +41,7 @@ var THE_TOWER_OF_POWER = function () {
     });
     addEventListener('blur', function () {
       for (var a in playing) playing[a].pause();
+      console.log(playing)
     });
     addEventListener('focus', function () {
       for (var a in playing) playing[a].play();
@@ -101,9 +102,14 @@ var THE_TOWER_OF_POWER = function () {
     this.audio = document.createElement('audio');
     this.audio.src = src;
     this.audio.volume = 0.5;
+    this.loop = false;
     var self = this;
     this.audio.addEventListener('ended', function () {
-      delete playing[self.audio.src];
+      if (self.loop) {
+        self.audio.play();
+      } else {
+        delete playing[self.audio.src];
+      }
     });
   };
 
@@ -355,14 +361,16 @@ var THE_TOWER_OF_POWER = function () {
       var tilesHeight = 32;
       var scrollX = 0;
       var player = {
-        x: 0,
-        y: 0,
+        x: 28,
+        y: 44,
         w: 8,
         h: 8,
-        speed: 1,
+        speed: 0.5,
         lastH: '',
         lastV: ''
       };
+      var roundStartBgm = assets.audio.roundStart;
+      var roundPlayBgm = assets.audio.roundPlay;
       var lTimer = 0;
       var lastFloor = 0;
       var floors;
@@ -371,7 +379,7 @@ var THE_TOWER_OF_POWER = function () {
       var intro = function (floor) {
         lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
         assets.audio.insertCredit.stop();
-        assets.audio.roundStart.play();
+        roundStartBgm.play();
         lStage.drawText({ text: 'get ready', color: 11, x: 9, y: 13 });
         lStage.drawText({ text: 'player one', color: 11, x: 9, y: 15 });
         lStage.drawText({ text: 'floor', color: 11, x: 11, y: 18 });
@@ -380,8 +388,6 @@ var THE_TOWER_OF_POWER = function () {
 
       var init = function (floor) {
         lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
-        player.x = 76;
-        player.y = 76;
         for (var y = 0; y < tilesHeight; y++) {
           for (var x = 0; x < tilesWidth; x++) {
             var tileCur = parseInt(convertBase(floors[floor.toString()][y].charAt(x), 64, 10));
@@ -454,24 +460,25 @@ var THE_TOWER_OF_POWER = function () {
 
       var playerDraw = function () {
         pStage.fillStyle = '#000000';
-        pStage.fillRect(player.x - player.w, player.y - player.h, player.w * 2, player.h * 2);
+        pStage.fillRect(Math.floor(player.x) - player.w, Math.floor(player.y) - player.h, player.w * 2, player.h * 2);
       };
 
       var play = function () {
         var edge1 = info.width / 2;
         var edge2 = info.width * 1.5 + 16;
         if (player.x < edge1) scrollX = 0;
-        if (player.x >= edge1 && player.x <= edge2) scrollX = edge1 - player.x;
+        if (player.x >= edge1 && player.x <= edge2) scrollX = edge1 - Math.floor(player.x);
         if (player.x > edge2) scrollX = edge1 - edge2;
         pStage.clearRect(player.x - player.w * 2, player.y - player.h * 2, player.w * 4, player.h * 4);
         controls();
         playerDraw();
-        assets.audio.roundPlay.play();
+        console.log(player.x)
       };
 
       var doTiming = function (floor) {
         if (!lTimer) intro(floor);
         if (lTimer === 209) init(floor);
+        if (lTimer === 389) { roundPlayBgm.play(); roundPlayBgm.loop = true; }
         if (lTimer > 389) play();
         lTimer++;
       };
