@@ -44,6 +44,7 @@ var THE_TOWER_OF_POWER = (function () {
 
     });
     addEventListener('keydown', function (e) {
+      for (var c in controls) if (controls[c] === e.code) e.preventDefault();
       keys[e.code] = true;
     });
     addEventListener('keyup', function (e) {
