@@ -79,7 +79,7 @@ var THE_TOWER_OF_POWER = (function () {
       '<h1 style="float: left">Help</h1>' + '<img style="float: right; transform: translateX(2px)" width="52px" height="52px" src="./assets/iconHelp.png">' +
       '<hr style="border: 1px solid #FFFFFF; clear: both"></hr>' +
       '</div>' +
-      '<div style="height: 85%; overflow-y: scroll">' +
+      '<div style="height: 85%; overflow-y: auto">' +
       '<h2 style="float: left">Controls</h2>' + '<img style="float: right" width="46px" height="46px" src="./assets/iconControls.png">' +
       '<ul style="clear: both">' +
       '<li>Directional: Arrow keys</li>' +
