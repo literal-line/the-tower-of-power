@@ -25,6 +25,17 @@ var THE_TOWER_OF_POWER = (function () {
     left: 'ArrowLeft',
     action: 'ControlLeft'
   };
+  var PAUSE;
+  var setPause = function (bool) {
+    if (bool) {
+      PAUSE = true;
+      keys = {};
+      for (var a in playing) playing[a].pause();
+    } else {
+      PAUSE = false;
+      for (var a in playing) playing[a].play();
+    }
+  };
 
   var keys = {};
   var initEventListeners = function () {
@@ -40,9 +51,6 @@ var THE_TOWER_OF_POWER = (function () {
     };
     window.addEventListener('resize', resize);
     window.addEventListener('orientationchange', resize);
-    window.addEventListener('blur', function () {
-
-    });
     window.addEventListener('keydown', function (e) {
       for (var c in controls) if (controls[c] === e.code) e.preventDefault();
       keys[e.code] = true;
@@ -50,12 +58,8 @@ var THE_TOWER_OF_POWER = (function () {
     window.addEventListener('keyup', function (e) {
       delete keys[e.code];
     });
-    window.addEventListener('blur', function () {
-      for (var a in playing) playing[a].pause();
-    });
-    window.addEventListener('focus', function () {
-      for (var a in playing) playing[a].play();
-    });
+    window.addEventListener('blur', function() { setPause(true); });
+    window.addEventListener('focus', function() { setPause(false); });
 
     resize();
   };
@@ -74,6 +78,7 @@ var THE_TOWER_OF_POWER = (function () {
   var initHelp = function () {
     var helpBtn = document.createElement('button');
     var helpPopup = document.createElement('div');
+    var pauseLoop;
     helpPopup.innerHTML =
       '<div>' +
       '<h1 style="float: left">Help</h1>' + '<img style="float: right; transform: translateX(2px)" width="52px" height="52px" src="./assets/iconHelp.png">' +
@@ -92,7 +97,16 @@ var THE_TOWER_OF_POWER = (function () {
     helpPopup.style = 'background: #000030; opacity: 0.75; border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF; image-rendering: pixelated';
     helpBtn.classList.add('btn3d');
     helpPopup.classList.add('hidden');
-    helpBtn.onclick = function () { helpPopup.classList.toggle('hidden'); this.blur(); };
+    helpBtn.onclick = function () {
+      helpPopup.classList.toggle('hidden');
+      if (Array.prototype.slice.call(helpPopup.classList).indexOf('hidden') === -1) {
+        pauseLoop = setInterval(function () { setPause(true); }, 1);
+      } else {
+        clearInterval(pauseLoop);
+        setPause(false);
+      }
+      this.blur();
+    };
     document.body.insertAdjacentElement('afterbegin', helpBtn);
     document.body.insertAdjacentElement('afterbegin', helpPopup);
   };
@@ -175,13 +189,9 @@ var THE_TOWER_OF_POWER = (function () {
 
   var game = (function () {
     var STATE = 'init';
-    var PAUSE = false;
     var currentFloor = 1;
     var lives = 3;
     var timer = 0;
-
-    window.addEventListener('focus', function () { PAUSE = false; });
-    window.addEventListener('blur', function () { PAUSE = true; });
 
     var highscores = [
       { score: 86434, floor: 99, name: 'chad' },
@@ -545,7 +555,10 @@ var THE_TOWER_OF_POWER = (function () {
                 throw ('Error: requested state does not exist!');
             }
             timer++;
-          } else canvas.style.filter = 'brightness(33.33%)';
+          } else {
+            canvas.style.filter = 'brightness(33.33%)';
+            stage.drawText({ text: 'paused', color: 0, x: 11, y: 17 });
+          }
           then = now - (delta % interval);
         }
       }
