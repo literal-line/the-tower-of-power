@@ -58,8 +58,8 @@ var THE_TOWER_OF_POWER = (function () {
     window.addEventListener('keyup', function (e) {
       delete keys[e.code];
     });
-    window.addEventListener('blur', function() { setPause(true); });
-    window.addEventListener('focus', function() { setPause(false); });
+    window.addEventListener('blur', function () { setPause(true); });
+    window.addEventListener('focus', function () { setPause(false); });
 
     resize();
   };
@@ -388,15 +388,6 @@ var THE_TOWER_OF_POWER = (function () {
       var tilesWidth = 58;
       var tilesHeight = 32;
       var scrollX = 0;
-      var player = {
-        x: 28,
-        y: 44,
-        w: 8,
-        h: 8,
-        speed: 1,
-        lastH: '',
-        lastV: ''
-      };
       var roundStartBgm = assets.audio.roundStart;
       var roundPlayBgm = assets.audio.roundPlay;
       var lTimer = 0;
@@ -404,15 +395,65 @@ var THE_TOWER_OF_POWER = (function () {
       var floors;
       requestText('./floors.json', function (json) { floors = JSON.parse(json).floors; });
 
+      var HumanoidEntity = function (obj) {
+        this.x = obj.x;
+        this.y = obj.y;
+        this.w = 8;
+        this.h = 8;
+        this.speed = obj.speed;
+        this.dir = obj.dir;
+        this.lastH = '';
+        this.lastV = '';
+        this.cols = 0;
+      };
+
+      HumanoidEntity.prototype.move = function (dir) {
+        var s = this.speed;
+        switch (dir) {
+          case 'up':
+            this.dir = 'up';
+            this.lastV = 'up';
+            if (boxCollision(this, 0, -s)) {
+              this.cols++;
+              if (this.cols < 3) this.move(this.lastH);
+            } else this.y -= s;
+            break;
+          case 'down':
+            this.dir = 'down';
+            this.lastV = 'down';
+            if (boxCollision(this, 0, s)) {
+              this.cols++;
+              if (this.cols < 3) this.move(this.lastH);
+            } else this.y += s;
+            break;
+          case 'right':
+            this.dir = 'right';
+            this.lastH = 'right';
+            if (boxCollision(this, s, 0)) {
+              this.cols++;
+              if (this.cols < 3) this.move(this.lastV);
+            } else this.x += s;
+            break;
+          case 'left':
+            this.dir = 'left';
+            this.lastH = 'left';
+            if (boxCollision(this, -s, 0)) {
+              this.cols++;
+              if (this.cols < 3) this.move(this.lastV);
+            } else this.x -= s;
+            break;
+        }
+      };
+
       var collision = function (x, y) {
         return floors[currentFloor.toString()][Math.floor((y - 16) / 8)].charAt(Math.floor(x / 8)) !== 'j';
       };
 
-      var boxCollision = function (offsX, offsY) {
-        var x = player.x + offsX;
-        var y = player.y + offsY;
-        var w = player.w;
-        var h = player.h;
+      var boxCollision = function (entity, offsX, offsY) {
+        var x = entity.x + offsX;
+        var y = entity.y + offsY;
+        var w = entity.w;
+        var h = entity.h;
         var points = [
           collision(x, y - h / 2), // top-mid
           collision(x, y + h / 2 - 1), // bottom-mid
@@ -426,6 +467,12 @@ var THE_TOWER_OF_POWER = (function () {
         return points.some(function (cur) { return cur ? true : false; });
       };
 
+      var player = new HumanoidEntity({
+        x: 28,
+        y: 44,
+        speed: 1
+      });
+
       var intro = function (floor) {
         lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
         assets.audio.insertCredit.stop();
@@ -437,6 +484,7 @@ var THE_TOWER_OF_POWER = (function () {
       };
 
       var init = function (floor) {
+        player.dir = 'down';
         lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
         for (var y = 0; y < tilesHeight; y++) {
           for (var x = 0; x < tilesWidth; x++) {
@@ -446,61 +494,31 @@ var THE_TOWER_OF_POWER = (function () {
         }
       };
 
-      var playerControls = function () {
+      var doPlayerControls = function () {
         var c = controls;
-        var cols = 0;
-        var move = function (dir) {
-          var s = player.speed;
-          switch (dir) {
-            case 'up':
-              player.lastV = 'up';
-              if (boxCollision(0, -s)) {
-                cols++;
-                if (cols < 3) move(player.lastH);
-              } else player.y -= s;
-              break;
-            case 'down':
-              player.lastV = 'down';
-              if (boxCollision(0, s)) {
-                cols++;
-                if (cols < 3) move(player.lastH);
-              } else player.y += s;
-              break;
-            case 'right':
-              player.lastH = 'right';
-              if (boxCollision(s, 0)) {
-                cols++;
-                if (cols < 3) move(player.lastV);
-              } else player.x += s;
-              break;
-            case 'left':
-              player.lastH = 'left';
-              if (boxCollision(-s, 0)) {
-                cols++;
-                if (cols < 3) move(player.lastV);
-              } else player.x -= s;
-              break;
-          }
-        };
-
         var dir = keys[c.up] ? 'up' : keys[c.down] ? 'down' : keys[c.right] ? 'right' : keys[c.left] ? 'left' : 0;
-        move(dir);
+        player.cols = 0;
+        player.move(dir);
       };
 
       var playerDraw = function () {
         pStage.fillStyle = '#000000';
+        pStage.clearRect(player.x - player.w * 2, player.y - player.h * 2, player.w * 4, player.h * 4);
         pStage.fillRect(Math.floor(player.x) - player.w, Math.floor(player.y) - player.h, player.w * 2, player.h * 2);
       };
 
-      var play = function () {
+      var doScrolling = function () {
         var edge1 = info.width / 2;
         var edge2 = info.width * 1.5 + 16;
         if (player.x < edge1) scrollX = 0;
         if (player.x >= edge1 && player.x <= edge2) scrollX = edge1 - Math.floor(player.x);
         if (player.x > edge2) scrollX = edge1 - edge2;
-        pStage.clearRect(player.x - player.w * 2, player.y - player.h * 2, player.w * 4, player.h * 4);
+      };
+
+      var play = function () {
+        doPlayerControls();
+        doScrolling();
         playerDraw();
-        playerControls();
       };
 
       var doTiming = function (floor) {
