@@ -590,18 +590,21 @@ var THE_TOWER_OF_POWER = (function () {
     },
     clickToBegin: function () {
       var initCSS = function () {
-        var style = document.styleSheets[0];
-        style.insertRule('@font-face { font-family: "Arcade"; src: url(\'./assets/arcade_n.ttf\'); }');
-        style.insertRule('body { margin: 0; }');
-        style.insertRule('div { font-family: "Arcade"; font-size: 16px; }');
-        style.insertRule('h1, h2, h3, h4, h5, h6 { font-style: italic; }');
-        style.insertRule('h1, h2 { padding: 10px; margin: 0; }');
-        style.insertRule('ul { padding-left: 40px; }');
-        style.insertRule('li { padding: 2px; }');
-        style.insertRule('div, button { -webkit-user-select: none; -moz-user-select: none; user-select: none; user-select: none; }');
-        style.insertRule('.btn3d:active { border-style: inset !important; }');
-        style.insertRule('.btn3d:hover { opacity: 1 !important; }');
-        style.insertRule('.hidden { display: none; }');
+        var stylesheet = document.styleSheets[0];
+        var rules = [
+          '@font-face { font-family: "Arcade"; src: url(\'./assets/arcade_n.ttf\'); }',
+          'body { margin: 0; }',
+          'div { font-family: "Arcade"; font-size: 16px; }',
+          'h1, h2, h3, h4, h5, h6 { font-style: italic; }',
+          'h1, h2 { padding: 10px; margin: 0; }',
+          'ul { padding-left: 40px; }',
+          'li { padding: 2px; }',
+          'div, button { -webkit-user-select: none; -moz-user-select: none; user-select: none; user-select: none; }',
+          '.btn3d:active { border-style: inset !important; }',
+          '.btn3d:hover { opacity: 1 !important; }',
+          '.hidden { display: none; }'
+        ];
+        rules.forEach(function (cur) { stylesheet.insertRule(cur); });
       };
 
       var btn = document.createElement('button');
