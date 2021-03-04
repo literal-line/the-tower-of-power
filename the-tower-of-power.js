@@ -111,24 +111,10 @@ var THE_TOWER_OF_POWER = (function () {
     document.body.insertAdjacentElement('afterbegin', helpPopup);
   };
 
-  var initServiceWorker = function () {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('./service-worker.js', { scope: './' })
-        .then(function (registration) {
-          console.log("Service Worker Registered");
-        })
-        .catch(function (err) {
-          console.log("Service Worker Failed to Register", err);
-        });
-    }
-  };
-
   var init = function () {
     initEventListeners();
     initHelp();
     initCanvas();
-    initServiceWorker();
     document.body.insertAdjacentElement('afterbegin', canvas);
     console.log('the-tower-of-power ' + info.version);
     console.log('by ' + info.authors);
@@ -683,4 +669,17 @@ function convertBase(value, fromBase, toBase) {
     decValue = (decValue - (decValue % toBase)) / toBase;
   }
   return newValue || '0';
+}
+
+// service worker
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('./service-worker.js', { scope: './' })
+    .then(function (registration) {
+      console.log("Service Worker Registered");
+    })
+    .catch(function (err) {
+      console.log("Service Worker Failed to Register", err);
+    });
 }
