@@ -1,5 +1,5 @@
 var version = 'v0.1-20210304-1037est';
-var assets = [
+var assets = [ // I don't think this works correctly but WHO CARES!!!???
   './',
   './index.html',
   './the-tower-of-power.js',

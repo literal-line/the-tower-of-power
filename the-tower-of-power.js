@@ -118,10 +118,8 @@ var THE_TOWER_OF_POWER = (function () {
     document.body.insertAdjacentElement('afterbegin', canvas);
     console.log('the-tower-of-power ' + info.version);
     console.log('by ' + info.authors);
-    setTimeout(function () {
-      requestAnimationFrame(game.loop);
-      setInterval(function () { assets.audio.silence.play(); }, 1000 / 60);
-    }, 500);
+    requestAnimationFrame(game.loop);
+    setInterval(function () { assets.audio.silence.play(); }, 1000 / 60);
   };
 
   var playing = {};
@@ -674,7 +672,7 @@ function convertBase(value, fromBase, toBase) {
 // service worker
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
+  window.addEventListener('load', function () {
     navigator.serviceWorker
       .register('./service-worker.js')
       .then(res => console.log('service worker registered'))
