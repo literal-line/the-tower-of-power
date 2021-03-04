@@ -7,7 +7,7 @@ var THE_TOWER_OF_POWER = (function () {
   var canvas = document.createElement('canvas');
   var stage = canvas.getContext('2d');
   var info = {
-    version: 'v0.1-20210304-1037est',
+    version: 'v0.1-20210304-1505est',
     authors: ['Literal Line'],
     width: 224,
     height: 288,
