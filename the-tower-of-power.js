@@ -674,12 +674,10 @@ function convertBase(value, fromBase, toBase) {
 // service worker
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker
-    .register('./service-worker.js', { scope: './' })
-    .then(function (registration) {
-      console.log("Service Worker Registered");
-    })
-    .catch(function (err) {
-      console.log("Service Worker Failed to Register", err);
-    });
+  window.addEventListener('load', function() {
+    navigator.serviceWorker
+      .register('./service-worker.js')
+      .then(res => console.log('service worker registered'))
+      .catch(err => console.log('service worker not registered', err))
+  })
 }
