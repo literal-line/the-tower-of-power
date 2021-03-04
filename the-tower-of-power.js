@@ -286,29 +286,41 @@ var THE_TOWER_OF_POWER = (function () {
       var showHighscores = false;
       var credits = 0;
 
-      var drawMain = function () {
-        lStage.drawImage(title, lCanvas.width * 0.75 - title.width / 2, 32);
-        lStage.drawText({ text: 'created by literal line', color: 0, x: 30, y: 25 });
-        lStage.drawText({ text: 'licensed under', color: 0, x: 35, y: 27 });
-        lStage.drawText({ text: 'the gnu gpl v3', color: 0, x: 35, y: 28 });
-        lStage.drawText({ text: 'more at quique.gq', color: 3, x: 33, y: 32 });
-      };
+      var drawMain = (function () {
+        var text = [
+          { text: 'created by literal line', color: 0, x: 30, y: 25 },
+          { text: 'licensed under', color: 0, x: 35, y: 27 },
+          { text: 'the gnu gpl v3', color: 0, x: 35, y: 28 },
+          { text: 'more at quique.gq', color: 3, x: 33, y: 32 }
+        ];
 
-      var drawStory = function () {
-        lStage.drawText({ text: 'in another time', color: 10, x: 3, y: 4 });
-        lStage.drawText({ text: 'in another world...', color: 10, x: 6, y: 6 });
-        lStage.drawText({ text: 'the blue power staff', color: 10, x: 0, y: 9 });
-        lStage.drawText({ text: 'kept the kingdom in peace', color: 10, x: 3, y: 11 });
-        lStage.drawText({ text: 'but the evil demon cabrakan', color: 10, x: 0, y: 14 });
-        lStage.drawText({ text: 'stole the staff and', color: 10, x: 3, y: 16 });
-        lStage.drawText({ text: 'imprisoned the maiden', color: 10, x: 6, y: 18 });
-        lStage.drawText({ text: 'Akna in a tower', color: 10, x: 9, y: 20 });
-        lStage.drawText({ text: 'the prince Tadeas', color: 10, x: 0, y: 23 });
-        lStage.drawText({ text: 'wore golden armor', color: 10, x: 2, y: 25 });
-        lStage.drawText({ text: 'and dueled monsters', color: 10, x: 4, y: 27 });
-        lStage.drawText({ text: 'to save Akna in', color: 10, x: 6, y: 29 });
-        lStage.drawText({ text: 'the tower of power', color: 19, x: 8, y: 31 });
-      };
+        return function () {
+          lStage.drawImage(title, lCanvas.width * 0.75 - title.width / 2, 32);
+          text.forEach(function (cur) { lStage.drawText(cur) });
+        }
+      })();
+
+      var drawStory = (function () {
+        var text = [
+          { text: 'in another time', color: 10, x: 3, y: 4 },
+          { text: 'in another world...', color: 10, x: 6, y: 6 },
+          { text: 'the blue power staff', color: 10, x: 0, y: 9 },
+          { text: 'kept the kingdom in peace', color: 10, x: 3, y: 11 },
+          { text: 'but the evil demon cabrakan', color: 10, x: 0, y: 14 },
+          { text: 'stole the staff and', color: 10, x: 3, y: 16 },
+          { text: 'imprisoned the maiden', color: 10, x: 6, y: 18 },
+          { text: 'Akna in a tower', color: 10, x: 9, y: 20 },
+          { text: 'the prince Tadeas', color: 10, x: 0, y: 23 },
+          { text: 'wore golden armor', color: 10, x: 2, y: 25 },
+          { text: 'and dueled monsters', color: 10, x: 4, y: 27 },
+          { text: 'to save Akna in', color: 10, x: 6, y: 29 },
+          { text: 'the tower of power', color: 19, x: 8, y: 31 }
+        ];
+
+        return function () {
+          text.forEach(function (cur) { lStage.drawText(cur) });
+        }
+      })();
 
       var drawHighscores = function () {
         lStage.clearRect(0, 0, lCanvas.width / 2, lCanvas.height);
@@ -391,7 +403,7 @@ var THE_TOWER_OF_POWER = (function () {
       var lTimer = 0;
       var lastFloor = 0;
       var floors;
-      requestText('./floors.json', function (json) { floors = JSON.parse(json).floors; });
+      requestText('./assets/floors.json', function (json) { floors = JSON.parse(json).floors; });
 
       var HumanoidEntity = function (obj) {
         this.x = obj.x;
@@ -591,7 +603,7 @@ var THE_TOWER_OF_POWER = (function () {
         var stylesheet = document.styleSheets[0];
         var rules = [
           '@font-face { font-family: "Arcade"; src: url(\'./assets/arcade_n.ttf\'); }',
-          'body { margin: 0; }',
+          'body { margin: 0; overflow: hidden; }',
           'div { font-family: "Arcade"; font-size: 16px; }',
           'h1, h2, h3, h4, h5, h6 { font-style: italic; }',
           'h1, h2 { padding: 10px; margin: 0; }',
