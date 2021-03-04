@@ -80,7 +80,6 @@ var THE_TOWER_OF_POWER = (function () {
     var helpPopup = document.createElement('div');
     var pauseLoop;
     helpPopup.innerHTML =
-      '<div>' +
       '<h1 style="float: left">Help</h1>' + '<img style="float: right; transform: translateX(2px)" width="52px" height="52px" src="./assets/iconHelp.png">' +
       '<hr style="border: 1px solid #FFFFFF; clear: both"></hr>' +
       '</div>' +
@@ -91,8 +90,7 @@ var THE_TOWER_OF_POWER = (function () {
       '<li>Attack: Left ctrl</li>' +
       '<li>Insert coin: Right shift</li>' +
       '<li>Player 1 start: Enter</li>' +
-      '<ul>' +
-      '</div>';
+      '<ul>';
     helpBtn.style = 'background: #000066 url(\'./assets/iconHelp.png\'); background-size: cover; opacity: 0.3333; border: 2px outset #3333FF; position: fixed; width: 52px; height: 52px; bottom: 5px; right: 5px; outline: none; image-rendering: pixelated';
     helpPopup.style = 'background: #000030; opacity: 0.75; border: 1px solid #FFFFFF; border-radius: 5px; padding: 25px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; height: 75vh; color: #FFFFFF; image-rendering: pixelated';
     helpBtn.classList.add('btn3d');
@@ -454,7 +452,7 @@ var THE_TOWER_OF_POWER = (function () {
         var y = entity.y + offsY;
         var w = entity.w;
         var h = entity.h;
-        var points = [
+        var points = [ // this sucks!!11!1!!!
           collision(x, y - h / 2), // top-mid
           collision(x, y + h / 2 - 1), // bottom-mid
           collision(x + w / 2 - 1, y), // right-mid
