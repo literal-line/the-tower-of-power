@@ -1,11 +1,10 @@
-var version = 'v0.1-xxxxxxxx-xxxxest';
+var version = 'v0.1-20210304-1030est';
 var assets = [
   './',
   './index.html'
 ];
 
 self.addEventListener('install', function (e) {
-  console.log('hi')
   e.waitUntil(
     caches.open(version).then(cache => {
       cache.addAll(assets)
