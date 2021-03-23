@@ -1,0 +1,46 @@
+@font-face {
+  font-family: "Arcade";
+  src: url('./assets/arcade_n.ttf');
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+div {
+  font-family: "Arcade";
+  font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 10px;
+  font-style: italic;
+}
+
+ul {
+  padding-left: 40px;
+}
+
+li {
+  padding: 2px;
+}
+
+div, button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.btn3d:active {
+  border-style: inset !important;
+}
+
+.btn3d:hover {
+  opacity: 1 !important;
+}
+
+.hidden {
+  display: none;
+}

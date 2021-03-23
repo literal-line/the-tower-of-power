@@ -599,29 +599,10 @@ var THE_TOWER_OF_POWER = (function () {
       return controls;
     },
     clickToBegin: function () {
-      var initCSS = function () {
-        var stylesheet = document.styleSheets[0];
-        var rules = [
-          '@font-face { font-family: "Arcade"; src: url(\'./assets/arcade_n.ttf\'); }',
-          'body { margin: 0; overflow: hidden; }',
-          'div { font-family: "Arcade"; font-size: 16px; }',
-          'h1, h2, h3, h4, h5, h6 { font-style: italic; }',
-          'h1, h2 { padding: 10px; margin: 0; }',
-          'ul { padding-left: 40px; }',
-          'li { padding: 2px; }',
-          'div, button { -webkit-user-select: none; -moz-user-select: none; user-select: none; user-select: none; }',
-          '.btn3d:active { border-style: inset !important; }',
-          '.btn3d:hover { opacity: 1 !important; }',
-          '.hidden { display: none; }'
-        ];
-        rules.forEach(function (cur) { stylesheet.insertRule(cur); });
-      };
-
       var btn = document.createElement('button');
       btn.style = 'padding: 10px; border: 1px solid #FFFFFF; border-radius: 3px; background: #000000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); outline: none; font-family: "Courier New"; font-size: 3vw; color: #FFFFFF';
       btn.innerHTML = 'Click to begin';
       btn.onclick = function () { THE_TOWER_OF_POWER().init(); btn.remove(); };
-      initCSS();
       document.body.appendChild(btn);
     }
   }
