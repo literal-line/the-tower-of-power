@@ -230,7 +230,7 @@ var THE_TOWER_OF_POWER = (function () {
       var drawLogo = function () {
         lStage.globalAlpha = opacity;
         lStage.clearRect(0, 0, lCanvas.width, lCanvas.height);
-        lStage.drawImage(logo, lCanvas.width / 2 - logo.width / 2, lCanvas.height / 2 - logo.height / 2);
+        lStage.drawImage(logo, Math.floor(lCanvas.width / 2 - logo.width / 2), Math.floor(lCanvas.height / 2 - logo.height / 2));
       };
 
       var doTiming = function () {
